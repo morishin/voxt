@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voxt — Macの音声入力ユーティリティ</title>
+  <meta name="description" content="Push-to-talk 方式の音声入力ユーティリティ。キーを押したまま話して、離すだけ。Voxt がオンデバイス AI で文字起こし＆整形し、カーソル位置へ直接入力します。データは Mac の外へ出ません。">
+  <meta name="keywords" content="Voxt, 音声入力, macOS, Push-to-talk, 文字起こし, オンデバイス AI, Apple Intelligence, Foundation Models, メニューバー, Macアプリ">
+  <meta name="author" content="morishin">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#3851d1">
+  <link rel="canonical" href="https://voxt.morishin.me/ja/">
+  <link rel="alternate" hreflang="en" href="https://voxt.morishin.me/">
+  <link rel="alternate" hreflang="ja" href="https://voxt.morishin.me/ja/">
+  <link rel="alternate" hreflang="x-default" href="https://voxt.morishin.me/">
+  <link rel="icon" type="image/webp" href="../assets/icon.webp">
+  <link rel="apple-touch-icon" href="../assets/icon.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;700;800&family=DM+Sans:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Voxt">
+  <meta property="og:title" content="Voxt — Macの音声入力ユーティリティ">
+  <meta property="og:description" content="キーを押したまま話して、離すだけ。オンデバイス AI で文字起こし＆整形し、カーソル位置へ直接入力。データは Mac の外へ出ません。">
+  <meta property="og:url" content="https://voxt.morishin.me/ja/">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:image" content="https://voxt.morishin.me/assets/icon.webp">
+  <meta property="og:image:width" content="1024">
+  <meta property="og:image:height" content="1024">
+  <meta property="og:image:alt" content="Voxt アプリアイコン">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Voxt — Macの音声入力ユーティリティ">
+  <meta name="twitter:description" content="キーを押したまま話して、離すだけ。オンデバイス AI で文字起こし＆整形。データは Mac の外へ出ません。">
+  <meta name="twitter:image" content="https://voxt.morishin.me/assets/icon.webp">
+  <meta name="twitter:creator" content="@morishin127">
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Voxt",
+    "operatingSystem": "macOS 26",
+    "applicationCategory": "UtilitiesApplication",
+    "description": "Push-to-talk 方式の音声入力ユーティリティ。オンデバイス AI で文字起こし＆整形し、カーソル位置へ直接入力。",
+    "url": "https://voxt.morishin.me/ja/",
+    "downloadUrl": "https://github.com/morishin/voxt/releases/latest",
+    "image": "https://voxt.morishin.me/assets/icon.webp",
+    "author": { "@type": "Person", "name": "morishin", "url": "https://github.com/morishin" },
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "isAccessibleForFree": true,
+    "inLanguage": ["ja", "en"]
+  }
+  </script>
+
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<nav class="lang-switch">
+  <a href="/">EN</a>
+  <a href="/ja/" class="active">JA</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner fade-up">
+    <div class="hero-wordmark">
+      <img src="../assets/icon.webp" alt="Voxt" class="hero-icon" width="56" height="56">
+      <span class="wordmark-text">Voxt</span>
+    </div>
+    <h1>オフラインで動く、<br><span class="accent">音声入力。</span></h1>
+
+    <div class="waveform" aria-hidden="true">
+      <div class="waveform-bar"></div>
+      <div class="waveform-bar"></div>
+      <div class="waveform-bar"></div>
+      <div class="waveform-bar"></div>
+      <div class="waveform-bar"></div>
+      <div class="waveform-bar"></div>
+      <div class="waveform-bar"></div>
+      <div class="waveform-bar"></div>
+      <div class="waveform-bar"></div>
+      <div class="waveform-bar"></div>
+      <div class="waveform-bar"></div>
+      <div class="waveform-bar"></div>
+      <div class="waveform-bar"></div>
+      <div class="waveform-bar"></div>
+      <div class="waveform-bar"></div>
+    </div>
+
+    <p class="lede">Voxt はすべてオフラインで動作します。キーを押したまま話して、離すだけ。オンデバイスのモデルが音声を文字起こし・整形し、カーソル位置へ直接入力します。ネット接続なし、外部送信なし。</p>
+
+    <div class="cta-group">
+      <a href="https://github.com/morishin/voxt/releases/latest" class="btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        macOS 版をダウンロード
+      </a>
+      <p class="cta-note">macOS 26 以降が必要 &middot; 無料</p>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="container">
+    <div class="features-grid fade-up">
+
+      <article class="feature-card">
+        <div class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <h3>安全</h3>
+        <p>音声も本文も Mac の外へ出ません。外部サーバーへのアップロードなし、送信なし。データはすべてデバイス内で完結します。</p>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <h3>高速</h3>
+        <p>すべてデバイス上で処理されるため、サーバー通信なし。キーを離すと、低遅延でカーソル位置へ挿入されます。</p>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <h3>高精度</h3>
+        <p>オンデバイスのモデルが文字起こしと整形を担当。ぼやけた口語表現も、整ったテキストに整形されて出力されます。</p>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<section class="how">
+  <div class="container">
+    <h2 class="fade-up">使い方</h2>
+    <ol class="steps">
+      <li class="step fade-up">
+        <strong>ホットキーを押す</strong>
+        <p>設定したキーを押し続けると、録音が始まります。</p>
+      </li>
+      <li class="step fade-up">
+        <strong>自然に話す</strong>
+        <p>普通のペースで話してください。離すまで録音し続けます。</p>
+      </li>
+      <li class="step fade-up">
+        <strong>離したら完了</strong>
+        <p>音声が文字起こしされ、AI で整形されたテキストがカーソル位置へ直接入力されます。</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-brand">
+      <img src="../assets/icon.webp" alt="" width="26" height="26">
+      Voxt
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/morishin/voxt/releases">GitHub Releases</a>
+      <a href="../privacy.html">プライバシーポリシー</a>
+    </div>
+    <p>&copy; 2026 Voxt</p>
+  </div>
+</footer>
+
+<script src="../assets/main.js"></script>
+</body>
+</html>

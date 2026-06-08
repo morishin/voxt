@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — Voxt</title>
+  <meta name="description" content="Voxt Privacy Policy. Voxt processes all voice and text locally on your Mac. No personal data is collected or transmitted.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://voxt.morishin.me/privacy.html">
+  <link rel="icon" type="image/webp" href="assets/icon.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<article class="legal">
+  <a href="/" class="back">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+    Back to Voxt
+  </a>
+
+  <h1>Privacy Policy</h1>
+  <span class="updated">Last updated: June 2026</span>
+
+  <h2>Summary</h2>
+  <p>Voxt is designed to be private by default. <strong>Your voice and text never leave your Mac.</strong> All speech recognition and AI formatting run on-device using Apple's frameworks. Voxt does not collect, store, or transmit any personal data.</p>
+
+  <h2>What Voxt does not do</h2>
+  <ul>
+    <li>Does not upload audio recordings to any server</li>
+    <li>Does not send transcribed text to any external service</li>
+    <li>Does not store audio or text after a session ends</li>
+    <li>Does not collect usage analytics or crash reports</li>
+    <li>Does not share any data with third parties</li>
+  </ul>
+
+  <h2>On-device processing</h2>
+  <p>Speech recognition is performed by Apple's Speech framework. Text formatting is performed by Foundation Models (Apple Intelligence), running entirely on your device. Neither framework sends data to external servers — this is a guarantee provided by Apple's on-device AI stack.</p>
+  <p>Audio recordings are written to a temporary file during processing and deleted immediately afterward. No audio is retained between sessions.</p>
+
+  <h2>Update checks</h2>
+  <p>The only external network request Voxt makes is an optional update check in the About tab. This sends an HTTP HEAD request to <code>github.com/morishin/voxt/releases/latest</code> to compare version numbers. No personal data is included in this request.</p>
+
+  <h2>Permissions</h2>
+  <p>Voxt requests the following system permissions, which you can review and revoke at any time in System Settings:</p>
+  <ul>
+    <li><strong>Microphone</strong> — required to record your voice</li>
+    <li><strong>Speech Recognition</strong> — required to transcribe audio on-device</li>
+    <li><strong>Accessibility</strong> — required to type text into other apps</li>
+    <li><strong>Input Monitoring</strong> — required to detect your push-to-talk hotkey</li>
+  </ul>
+
+  <h2>Contact</h2>
+  <p>Questions about privacy? Reach out via <a href="https://github.com/morishin/voxt/issues">GitHub Issues</a>.</p>
+</article>
+</body>
+</html>
