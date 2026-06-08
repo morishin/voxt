@@ -175,9 +175,9 @@ vkey/
 - [x] 完了条件: 起動・メニューバー表示・設定保存ができる（ビルド成功で確認）
 
 ### Phase 2: 権限とホットキー
-- [ ] `PermissionManager`（Mic/Speech/AX/Input Monitoring の状態表示・誘導・再チェック）
-- [ ] `HotkeyMonitor`（CGEventTap, keyDown/up 検出, repeat 無視, 排他録音）
-- [ ] 完了条件: 権限不足を表示、指定キー押下/解放が取れる
+- [x] `PermissionManager`（Mic/Speech/AX/Input Monitoring の状態表示・誘導・再チェック）
+- [x] `HotkeyMonitor`（CGEventTap, keyDown/up 検出, repeat 無視, 修飾キーは flagsChanged 対応）
+- [x] 完了条件: 権限不足を表示、指定キー押下/解放が取れる（ビルド成功で確認。実機での権限付与・キー検出は要動作確認）
 
 ### Phase 3: 録音 + 取り込み
 - [ ] `AudioCaptureService`（AVAudioEngine, 一時保存, 永続なし, 最大秒数）

@@ -12,6 +12,8 @@ struct SettingsView: View {
         TabView {
             GeneralSettingsView()
                 .tabItem { Label("General", systemImage: "gear") }
+            PermissionsView()
+                .tabItem { Label("Permissions", systemImage: "lock.shield") }
             RecordingSettingsView()
                 .tabItem { Label("Recording", systemImage: "mic") }
             LanguageSettingsView()
@@ -47,6 +49,9 @@ struct GeneralSettingsView: View {
 struct RecordingSettingsView: View {
     @EnvironmentObject private var settings: SettingsStore
 
+    /// 競合が少なく PTT に向く修飾キー候補。
+    static let selectableHotkeys: [Int] = [0x36, 0x37, 0x3D, 0x3A, 0x3F] // R-Cmd, L-Cmd, R-Opt, L-Opt, Fn
+
     var body: some View {
         Form {
             LabeledContent("Max recording duration") {
@@ -57,10 +62,11 @@ struct RecordingSettingsView: View {
                         .frame(width: 48, alignment: .trailing)
                 }
             }
-            // ホットキーの本格的な設定 UI は Phase 2 で追加する。
-            LabeledContent("Push-to-talk key code") {
-                Text("0x\(String(settings.hotKeyKeyCode, radix: 16)) (設定 UI は Phase 2 で追加)")
-                    .foregroundStyle(.secondary)
+            // 主要な修飾キーから選択する。任意キーへの対応は将来拡張。
+            Picker("Push-to-talk key", selection: $settings.hotKeyKeyCode) {
+                ForEach(Self.selectableHotkeys, id: \.self) { code in
+                    Text(HotkeyMonitor.displayName(for: CGKeyCode(code))).tag(code)
+                }
             }
         }
         .formStyle(.grouped)

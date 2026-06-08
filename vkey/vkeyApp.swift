@@ -10,21 +10,30 @@ import SwiftUI
 @main
 struct vkeyApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-    @StateObject private var settings = SettingsStore()
-    @StateObject private var status = PipelineStatusStore()
 
     var body: some Scene {
         MenuBarExtra {
             MenuBarView()
-                .environmentObject(settings)
-                .environmentObject(status)
+                .environmentObject(appDelegate.settings)
+                .environmentObject(appDelegate.status)
+                .environmentObject(appDelegate.coordinator.permissions)
         } label: {
-            StatusIcon(state: status.state)
+            MenuBarLabel(status: appDelegate.status)
         }
 
         Settings {
             SettingsView()
-                .environmentObject(settings)
+                .environmentObject(appDelegate.settings)
+                .environmentObject(appDelegate.coordinator.permissions)
         }
+    }
+}
+
+/// メニューバーラベル。状態変化に追従させるため ObservedObject で購読する。
+private struct MenuBarLabel: View {
+    @ObservedObject var status: PipelineStatusStore
+
+    var body: some View {
+        StatusIcon(state: status.state)
     }
 }

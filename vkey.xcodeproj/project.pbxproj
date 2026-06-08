@@ -259,7 +259,10 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "vkey はあなたの声を文字起こしするためにマイクを使用します。音声は端末内でのみ処理され、保存・送信されません。";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "vkey は録音した音声を端末内で文字起こしするために音声認識を使用します。音声は外部に送信されません。";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -291,7 +294,10 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "vkey はあなたの声を文字起こしするためにマイクを使用します。音声は端末内でのみ処理され、保存・送信されません。";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "vkey は録音した音声を端末内で文字起こしするために音声認識を使用します。音声は外部に送信されません。";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
