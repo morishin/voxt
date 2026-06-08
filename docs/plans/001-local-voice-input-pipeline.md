@@ -169,10 +169,10 @@ vkey/
 各フェーズ末でビルド確認（xcode MCP）。動作確認を要するものは開発者の OK を取ってからコミット（AGENTS.md / グローバル CLAUDE.md）。
 
 ### Phase 1: 骨組み
-- [ ] `vkeyApp` を `MenuBarExtra` 化（常駐メニューバーアプリ）、デフォルト `ContentView` 整理
-- [ ] `SettingsStore`(UserDefaults) + `Settings` モデル + 設定画面スケルトン
-- [ ] `PipelineStatusStore`(@MainActor) と `OSLog` 導入
-- [ ] 完了条件: 起動・メニューバー表示・設定保存ができる
+- [x] `vkeyApp` を `MenuBarExtra` 化（常駐メニューバーアプリ）、デフォルト `ContentView` 整理
+- [x] `SettingsStore`(UserDefaults) + `Settings` モデル + 設定画面スケルトン
+- [x] `PipelineStatusStore`(@MainActor) と `OSLog` 導入
+- [x] 完了条件: 起動・メニューバー表示・設定保存ができる（ビルド成功で確認）
 
 ### Phase 2: 権限とホットキー
 - [ ] `PermissionManager`（Mic/Speech/AX/Input Monitoring の状態表示・誘導・再チェック）

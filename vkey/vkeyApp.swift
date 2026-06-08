@@ -9,9 +9,22 @@ import SwiftUI
 
 @main
 struct vkeyApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @StateObject private var settings = SettingsStore()
+    @StateObject private var status = PipelineStatusStore()
+
     var body: some Scene {
-        WindowGroup {
-            ContentView()
+        MenuBarExtra {
+            MenuBarView()
+                .environmentObject(settings)
+                .environmentObject(status)
+        } label: {
+            StatusIcon(state: status.state)
+        }
+
+        Settings {
+            SettingsView()
+                .environmentObject(settings)
         }
     }
 }
