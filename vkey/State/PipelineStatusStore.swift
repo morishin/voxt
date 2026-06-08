@@ -31,6 +31,10 @@ final class PipelineStatusStore: ObservableObject {
     @Published private(set) var state: UIState = .ready
     @Published private(set) var lastInsertedSeq: UInt64?
     @Published private(set) var lastError: String?
+    /// 直近に挿入したテキスト（「Last Result をコピー」用）。
+    @Published private(set) var lastResultText: String?
+    /// Foundation Models（Apple Intelligence）が利用可能か。
+    @Published var modelAvailable = true
 
     private var enqueuedCount = 0
     private var insertedCount = 0
@@ -60,9 +64,10 @@ final class PipelineStatusStore: ObservableObject {
         recompute()
     }
 
-    func inserted(seq: UInt64) {
+    func inserted(seq: UInt64, text: String? = nil) {
         insertedCount += 1
         lastInsertedSeq = seq
+        if let text, !text.isEmpty { lastResultText = text }
         recompute()
     }
 

@@ -8,7 +8,9 @@
 import Foundation
 import Combine
 import CoreGraphics
+import AppKit
 import FoundationModels
+import ServiceManagement
 import OSLog
 
 @MainActor
@@ -18,6 +20,7 @@ final class AppCoordinator: ObservableObject {
     let status: PipelineStatusStore
     let permissions: PermissionManager
     let languages = LanguageManager()
+    let notifier = Notifier()
 
     private let hotkey: HotkeyMonitor
     private let capture = AudioCaptureService()
@@ -47,8 +50,21 @@ final class AppCoordinator: ObservableObject {
     func start() {
         permissions.refresh()
         hotkey.start()
+        status.modelAvailable = SystemLanguageModel.default.isAvailable
+        applyLaunchAtLogin(settings.launchAtLogin)
         startPipeline()
-        Task { await languages.refresh() }
+        Task {
+            await languages.refresh()
+            if settings.showNotifications { await notifier.requestAuthorization() }
+        }
+    }
+
+    /// 直近に挿入したテキストをクリップボードへコピーする（メニューの Last Result 用）。
+    func copyLastResult() {
+        guard let text = status.lastResultText, !text.isEmpty else { return }
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(text, forType: .string)
     }
 
     // MARK: - Hotkey
@@ -76,6 +92,26 @@ final class AppCoordinator: ObservableObject {
                 self?.updateHotKey(keyCode: newCode)
             }
             .store(in: &cancellables)
+
+        settings.$launchAtLogin
+            .removeDuplicates()
+            .dropFirst()
+            .sink { [weak self] enabled in
+                self?.applyLaunchAtLogin(enabled)
+            }
+            .store(in: &cancellables)
+    }
+
+    private func applyLaunchAtLogin(_ enabled: Bool) {
+        do {
+            if enabled {
+                try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
+            }
+        } catch {
+            Log.app.error("failed to update login item: \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     private func updateHotKey(keyCode: Int) {
@@ -112,6 +148,7 @@ final class AppCoordinator: ObservableObject {
         let maxModelCalls = settings.maxConcurrentModelCalls
         let maxUtterances = settings.maxConcurrentUtterances
         let status = self.status
+        let notifier = self.notifier
 
         pipelineTask = Task { [utteranceStream, transcriber, settings] in
             // 処理スタックを 1 度だけ構築する（GlobalModelLimiter は全発話で共有）。
@@ -125,7 +162,19 @@ final class AppCoordinator: ObservableObject {
             let serializer = InsertionSerializer(
                 inserter: inserter,
                 modeProvider: { await MainActor.run { settings.insertionMode } },
-                onInserted: { seq in await status.inserted(seq: seq.raw) }
+                onInserted: { seq, outcome, text in
+                    await status.inserted(seq: seq.raw, text: text.isEmpty ? nil : text)
+                    let showNotif = await MainActor.run { settings.showNotifications }
+                    guard showNotif else { return }
+                    switch outcome {
+                    case .pasted:
+                        await notifier.notify(title: "vkey", body: "直接挿入できなかったため、クリップボード経由で貼り付けました。")
+                    case .failed:
+                        await notifier.notify(title: "vkey", body: "テキストを挿入できませんでした。内容はクリップボードに保存しました。")
+                    case .directInserted, .none:
+                        break
+                    }
+                }
             )
             let coordinator = PipelineCoordinator(
                 processor: processor,

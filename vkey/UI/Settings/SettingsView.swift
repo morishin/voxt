@@ -190,10 +190,15 @@ struct DiagnosticsSettingsView: View {
     var body: some View {
         Form {
             Toggle("Enable debug logging", isOn: $settings.enableDebugLogging)
-            Stepper("Max concurrent model calls: \(settings.maxConcurrentModelCalls)",
-                    value: $settings.maxConcurrentModelCalls, in: 1...8)
-            Stepper("Max concurrent utterances: \(settings.maxConcurrentUtterances)",
-                    value: $settings.maxConcurrentUtterances, in: 1...8)
+            Section("並列度（実測で調整）") {
+                Stepper("Max concurrent model calls: \(settings.maxConcurrentModelCalls)",
+                        value: $settings.maxConcurrentModelCalls, in: 1...8)
+                Stepper("Max concurrent utterances: \(settings.maxConcurrentUtterances)",
+                        value: $settings.maxConcurrentUtterances, in: 1...8)
+                Text("並列度の変更はアプリ再起動後に反映されます。on-device モデルは直列化される場合があるため、効果は実測で確認してください。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
         .padding()

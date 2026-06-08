@@ -12,25 +12,36 @@ import AppKit
 import ApplicationServices
 import OSLog
 
+/// 挿入の結果。通知・ログに使う。
+enum InsertionOutcome: Sendable {
+    case directInserted
+    case pasted
+    case failed
+}
+
 @MainActor
 final class TextInserter {
 
-    /// 指定モードでテキストを挿入する。
-    func insert(_ text: String, mode: InsertionMode) {
-        guard !text.isEmpty else { return }
+    /// 指定モードでテキストを挿入し、結果を返す。
+    @discardableResult
+    func insert(_ text: String, mode: InsertionMode) -> InsertionOutcome {
+        guard !text.isEmpty else { return .directInserted }
 
         switch mode {
         case .direct:
-            if !insertViaAccessibility(text) {
-                Log.insertion.error("AX insertion failed (direct mode); text left uninserted")
-            }
+            if insertViaAccessibility(text) { return .directInserted }
+            // 直接挿入に失敗したら、手動貼り付けできるようクリップボードへ退避する。
+            copyToClipboard(text)
+            Log.insertion.error("AX insertion failed (direct mode); copied to clipboard")
+            return .failed
         case .paste:
             pasteViaClipboard(text)
+            return .pasted
         case .auto:
-            if !insertViaAccessibility(text) {
-                Log.insertion.info("AX insertion failed; falling back to clipboard paste")
-                pasteViaClipboard(text)
-            }
+            if insertViaAccessibility(text) { return .directInserted }
+            Log.insertion.info("AX insertion failed; falling back to clipboard paste")
+            pasteViaClipboard(text)
+            return .pasted
         }
     }
 
@@ -79,6 +90,13 @@ final class TextInserter {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(value, forType: .string)
+    }
+
+    /// ペーストはせず、クリップボードへ文字列を置くだけ。
+    private func copyToClipboard(_ text: String) {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(text, forType: .string)
     }
 
     /// Cmd-V を合成してペーストする（Accessibility 権限が必要）。

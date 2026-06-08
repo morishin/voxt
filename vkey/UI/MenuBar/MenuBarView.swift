@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct MenuBarView: View {
+    @EnvironmentObject private var coordinator: AppCoordinator
     @EnvironmentObject private var status: PipelineStatusStore
     @EnvironmentObject private var settings: SettingsStore
     @EnvironmentObject private var languages: LanguageManager
@@ -16,9 +17,20 @@ struct MenuBarView: View {
         // 状態表示
         Text(status.state.label)
 
+        if !status.modelAvailable {
+            Text("⚠︎ Apple Intelligence が無効のため整形なしで挿入します")
+        }
+
         if let last = status.lastError {
             Text("Last error: \(last)")
         }
+
+        Divider()
+
+        Button("Last Result をコピー") {
+            coordinator.copyLastResult()
+        }
+        .disabled(status.lastResultText == nil)
 
         Divider()
 

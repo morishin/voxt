@@ -14,6 +14,7 @@ struct vkeyApp: App {
     var body: some Scene {
         MenuBarExtra {
             MenuBarView()
+                .environmentObject(appDelegate.coordinator)
                 .environmentObject(appDelegate.settings)
                 .environmentObject(appDelegate.status)
                 .environmentObject(appDelegate.coordinator.permissions)

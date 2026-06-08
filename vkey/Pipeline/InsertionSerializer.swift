@@ -13,14 +13,14 @@ import OSLog
 actor InsertionSerializer {
     private let inserter: TextInserter
     private let modeProvider: @Sendable () async -> InsertionMode
-    private let onInserted: @Sendable (UtteranceSeq) async -> Void
+    private let onInserted: @Sendable (UtteranceSeq, InsertionOutcome?, String) async -> Void
 
     private var nextExpected: UInt64 = 0
     private var pending: [UInt64: ProcessedUtterance] = [:]
 
     init(inserter: TextInserter,
          modeProvider: @escaping @Sendable () async -> InsertionMode,
-         onInserted: @escaping @Sendable (UtteranceSeq) async -> Void) {
+         onInserted: @escaping @Sendable (UtteranceSeq, InsertionOutcome?, String) async -> Void) {
         self.inserter = inserter
         self.modeProvider = modeProvider
         self.onInserted = onInserted
@@ -43,13 +43,16 @@ actor InsertionSerializer {
     private func insert(_ u: ProcessedUtterance) async {
         switch u.outcome {
         case .formatted(let text), .rawFallback(let text, _):
-            if !text.isEmpty {
+            if text.isEmpty {
+                await onInserted(u.seq, nil, "")
+            } else {
                 let mode = await modeProvider()
-                await inserter.insert(text, mode: mode)
+                let outcome = await inserter.insert(text, mode: mode)
+                await onInserted(u.seq, outcome, text)
             }
         case .empty:
-            break // 挿入なし。seq は消費して順序を維持する。
+            // 挿入なし。seq は消費して順序を維持する。
+            await onInserted(u.seq, nil, "")
         }
-        await onInserted(u.seq)
     }
 }
