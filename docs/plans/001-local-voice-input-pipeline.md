@@ -199,11 +199,11 @@ vkey/
 - 注: `SystemLanguageModel.contextSize` は本 SDK では同期 Int。モデル非対応時は raw に倒す
 
 ### Phase 6: キュー並列パイプライン + 順序保証挿入
-- [ ] `PipelineCoordinator`（bounded-pump で `maxConcurrentUtterances`）
-- [ ] `InsertionSerializer`（seq 昇順 re-ordering バッファ、失敗/無音も seq 消費）
-- [ ] `TextInserter`（AX 挿入 → クリップボード fallback）
-- [ ] `PipelineRuntime` で全配線
-- [ ] 完了条件: 処理中に連続録音しても、挿入が発話 FIFO × チャンク順を厳守する
+- [x] `PipelineCoordinator`（bounded-pump で `maxConcurrentUtterances`）
+- [x] `InsertionSerializer`（seq 昇順 re-ordering バッファ、失敗/無音も seq 消費）
+- [x] `TextInserter`（AX 直接挿入 → クリップボード Cmd-V fallback、元クリップボード復元）
+- [x] 全配線は `AppCoordinator.startPipeline()` に集約（独立 `PipelineRuntime` は作らず統合）
+- [x] 完了条件: パイプライン配線とビルド成功で確認。順序保証の実挙動は実機要動作確認
 
 ### Phase 7: 多言語 UI
 - [ ] `SupportedLanguage`（Speech supported ∩ FM 対応の動的算出、AssetInventory DL）

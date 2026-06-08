@@ -21,6 +21,9 @@ struct UtteranceProcessor: Sendable {
     let formatter: ChunkFormatter
 
     func process(_ u: RawUtterance, config: ProcessingConfig) async -> ProcessedUtterance {
+        // 録音の一時ファイルは処理完了時に必ず削除する（永続保存しない）。
+        defer { try? FileManager.default.removeItem(at: u.audioURL) }
+
         // --- Stage 1: 文字起こし ---
         let transcript: String
         do {

@@ -24,7 +24,7 @@ final class AppCoordinator: ObservableObject {
     private let utteranceStream: AsyncStream<RawUtterance>
     private let transcriber = Transcriber()
 
-    private var consumerTask: Task<Void, Never>?
+    private var pipelineTask: Task<Void, Never>?
     private var cancellables: Set<AnyCancellable> = []
 
     init(settings: SettingsStore, status: PipelineStatusStore) {
@@ -42,11 +42,11 @@ final class AppCoordinator: ObservableObject {
         observeSettings()
     }
 
-    /// 起動時に呼ぶ。権限確認・ホットキー監視・発話 consumer を開始する。
+    /// 起動時に呼ぶ。権限確認・ホットキー監視・処理パイプラインを開始する。
     func start() {
         permissions.refresh()
         hotkey.start()
-        startConsumer()
+        startPipeline()
     }
 
     // MARK: - Hotkey
@@ -100,13 +100,18 @@ final class AppCoordinator: ObservableObject {
         guard let url else { return }
         let locale = Locale(identifier: settings.defaultLanguageIdentifier)
         intake.submit(audioURL: url, locale: locale)
+        // 採番した発話をキュー残数に反映する（挿入完了で減算される）。
+        status.enqueued()
     }
 
-    // MARK: - Consumer（Phase 6 で PipelineCoordinator に置き換える暫定実装）
+    // MARK: - Pipeline
 
-    private func startConsumer() {
+    private func startPipeline() {
         let maxModelCalls = settings.maxConcurrentModelCalls
-        consumerTask = Task { [utteranceStream, transcriber, settings] in
+        let maxUtterances = settings.maxConcurrentUtterances
+        let status = self.status
+
+        pipelineTask = Task { [utteranceStream, transcriber, settings] in
             // 処理スタックを 1 度だけ構築する（GlobalModelLimiter は全発話で共有）。
             let contextSize = SystemLanguageModel.default.contextSize
             let chunker = Chunker(contextSize: contextSize)
@@ -114,14 +119,19 @@ final class AppCoordinator: ObservableObject {
             let formatter = ChunkFormatter(limiter: limiter, chunker: chunker)
             let processor = UtteranceProcessor(transcriber: transcriber, chunker: chunker, formatter: formatter)
 
-            for await u in utteranceStream {
-                Log.pipeline.info("received utterance seq=\(u.seq.raw) locale=\(u.locale.identifier, privacy: .public)")
-                let config = await Self.makeConfig(from: settings)
-                let result = await processor.process(u, config: config)
-                Self.logOutcome(result)
-                // Phase 6 で順序保証挿入を行う。現状は処理結果のログまで。
-                try? FileManager.default.removeItem(at: u.audioURL)
-            }
+            let inserter = TextInserter()
+            let serializer = InsertionSerializer(
+                inserter: inserter,
+                modeProvider: { await MainActor.run { settings.insertionMode } },
+                onInserted: { seq in await status.inserted(seq: seq.raw) }
+            )
+            let coordinator = PipelineCoordinator(
+                processor: processor,
+                serializer: serializer,
+                configProvider: { await Self.makeConfig(from: settings) }
+            )
+
+            await coordinator.run(stream: utteranceStream, maxConcurrentUtterances: maxUtterances)
         }
     }
 
@@ -131,17 +141,6 @@ final class AppCoordinator: ObservableObject {
             let modelAvailable = SystemLanguageModel.default.isAvailable
             let mode = modelAvailable ? settings.formattingMode : .raw
             return ProcessingConfig(formattingMode: mode, outputSafetyFactor: settings.outputSafetyFactor)
-        }
-    }
-
-    private static func logOutcome(_ result: ProcessedUtterance) {
-        switch result.outcome {
-        case .formatted(let text):
-            Log.formatting.info("formatted seq=\(result.seq.raw): \(text, privacy: .private)")
-        case .rawFallback(let text, let reason):
-            Log.formatting.info("raw fallback seq=\(result.seq.raw) (\(reason.message, privacy: .public)): \(text, privacy: .private)")
-        case .empty:
-            Log.formatting.info("empty utterance seq=\(result.seq.raw)")
         }
     }
 }
