@@ -1,0 +1,38 @@
+# Xcode
+build/
+*.pbxuser
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcworkspace/xcuserdata/
+DerivedData/
+*.xcsettings
+*.xcscheme
+xcuserdata/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+.com.apple.timemachine.donotpresent
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Swift Package Manager
+.swiftpm/
+*.xcframework
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Carthage
+Carthage/Build/
+
+# Misc
+*.swp
+*.swo
+*~
+.env
+.vscode/
