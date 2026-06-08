@@ -180,9 +180,9 @@ vkey/
 - [x] 完了条件: 権限不足を表示、指定キー押下/解放が取れる（ビルド成功で確認。実機での権限付与・キー検出は要動作確認）
 
 ### Phase 3: 録音 + 取り込み
-- [ ] `AudioCaptureService`（AVAudioEngine, 一時保存, 永続なし, 最大秒数）
-- [ ] `UtteranceIntake`(seq 採番 + AsyncStream) を録音停止に接続。停止後すぐ次録音可能
-- [ ] 完了条件: 録音→`RawUtterance` がストリームに流れ、連続録音を受け付ける
+- [x] `AudioCaptureService`（AVAudioEngine, 一時保存, 永続なし, 最大秒数で自動停止）
+- [x] `UtteranceIntake`(seq 採番 + AsyncStream, MainActor で同期採番=FIFO保証) を録音停止に接続。停止後すぐ次録音可能
+- [x] 完了条件: 録音→`RawUtterance` がストリームに流れ、連続録音を受け付ける（暫定 consumer で受領ログ・ビルド成功で確認）
 
 ### Phase 4: 文字起こし（単一発話の直結確認）
 - [ ] `Transcriber`（SpeechAnalyzer/SpeechTranscriber, locale 指定, タイムアウト）
