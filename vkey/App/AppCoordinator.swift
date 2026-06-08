@@ -21,6 +21,7 @@ final class AppCoordinator: ObservableObject {
     private let capture = AudioCaptureService()
     private let intake: UtteranceIntake
     private let utteranceStream: AsyncStream<RawUtterance>
+    private let transcriber = Transcriber()
 
     private var consumerTask: Task<Void, Never>?
     private var cancellables: Set<AnyCancellable> = []
@@ -103,11 +104,17 @@ final class AppCoordinator: ObservableObject {
     // MARK: - Consumer（Phase 6 で PipelineCoordinator に置き換える暫定実装）
 
     private func startConsumer() {
-        consumerTask = Task { [utteranceStream] in
+        consumerTask = Task { [utteranceStream, transcriber] in
             for await u in utteranceStream {
                 Log.pipeline.info("received utterance seq=\(u.seq.raw) locale=\(u.locale.identifier, privacy: .public)")
-                // Phase 4 以降で文字起こし・整形・挿入を行う。
-                // 現状は受領のみ。一時音声ファイルはここで削除しておく。
+                do {
+                    let text = try await transcriber.transcribe(audioURL: u.audioURL, locale: u.locale)
+                    // 発話内容は個人情報なので private 扱いでログする。
+                    Log.speech.info("transcript seq=\(u.seq.raw): \(text, privacy: .private)")
+                } catch {
+                    Log.speech.error("transcription failed seq=\(u.seq.raw): \(error.localizedDescription, privacy: .public)")
+                }
+                // Phase 5/6 で整形・挿入を行う。現状は文字起こしまで。
                 try? FileManager.default.removeItem(at: u.audioURL)
             }
         }

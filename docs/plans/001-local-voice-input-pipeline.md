@@ -185,9 +185,10 @@ vkey/
 - [x] 完了条件: 録音→`RawUtterance` がストリームに流れ、連続録音を受け付ける（暫定 consumer で受領ログ・ビルド成功で確認）
 
 ### Phase 4: 文字起こし（単一発話の直結確認）
-- [ ] `Transcriber`（SpeechAnalyzer/SpeechTranscriber, locale 指定, タイムアウト）
-- [ ] まず `maxConcurrentUtterances=1` で 1 発話→transcript を確認
-- [ ] 完了条件: 短文発話が文字列になる
+- [x] `Transcriber`（SpeechAnalyzer/SpeechTranscriber, locale 指定, 資産自動DL, タイムアウト, results 並行収集）
+- [x] 暫定 consumer で 1 発話→transcript をログ出力
+- [x] 完了条件: 短文発話が文字列になる（ビルド成功で確認。実機での認識精度は要動作確認）
+- 注: プロジェクトは `SWIFT_DEFAULT_ACTOR_ISOLATION=MainActor`。サービス層は `actor` または明示分離で実装する
 
 ### Phase 5: チャンク分割 + 整形
 - [ ] `Chunker`（tokenCount/contextSize ベース input budget、NLTokenizer 文分割、hard split、概算 fallback）
