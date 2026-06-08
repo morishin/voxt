@@ -206,10 +206,10 @@ vkey/
 - [x] 完了条件: パイプライン配線とビルド成功で確認。順序保証の実挙動は実機要動作確認
 
 ### Phase 7: 多言語 UI
-- [ ] `SupportedLanguage`（Speech supported ∩ FM 対応の動的算出、AssetInventory DL）
-- [ ] メニューバーの言語クイック切替（現在言語表示 + ワンクリック変更 + DL 状態表示）
-- [ ] 設定の Language セクション（既定言語）
-- [ ] 完了条件: 主要言語を選んで録音・整形・挿入が通る
+- [x] `LanguageManager`（Speech `supportedLocales` ∩ FM `supportsLocale` の動的算出、`installedLocales` で DL 状態、AssetInventory で DL）
+- [x] メニューバーの言語クイック切替（現在言語表示 + ワンクリック変更 + 未DL 表示 + 選択時自動DL）
+- [x] 設定の Language セクション（一覧・選択・DL 状態・個別ダウンロード・更新）
+- [x] 完了条件: 言語選択 UI とビルド成功で確認。実機での録音→整形→挿入は要動作確認
 
 ### Phase 8: 実用化・チューニング
 - [ ] 並列度 2 ノブの実測ベンチ（直列 vs 並列、`maxConcurrentModelCalls` の実効果判定）→ 既定値確定

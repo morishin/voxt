@@ -17,6 +17,7 @@ final class AppCoordinator: ObservableObject {
     let settings: SettingsStore
     let status: PipelineStatusStore
     let permissions: PermissionManager
+    let languages = LanguageManager()
 
     private let hotkey: HotkeyMonitor
     private let capture = AudioCaptureService()
@@ -47,6 +48,7 @@ final class AppCoordinator: ObservableObject {
         permissions.refresh()
         hotkey.start()
         startPipeline()
+        Task { await languages.refresh() }
     }
 
     // MARK: - Hotkey

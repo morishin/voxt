@@ -17,6 +17,7 @@ struct vkeyApp: App {
                 .environmentObject(appDelegate.settings)
                 .environmentObject(appDelegate.status)
                 .environmentObject(appDelegate.coordinator.permissions)
+                .environmentObject(appDelegate.coordinator.languages)
         } label: {
             MenuBarLabel(status: appDelegate.status)
         }
@@ -25,6 +26,7 @@ struct vkeyApp: App {
             SettingsView()
                 .environmentObject(appDelegate.settings)
                 .environmentObject(appDelegate.coordinator.permissions)
+                .environmentObject(appDelegate.coordinator.languages)
         }
     }
 }

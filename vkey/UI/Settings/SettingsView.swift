@@ -78,21 +78,63 @@ struct RecordingSettingsView: View {
 
 struct LanguageSettingsView: View {
     @EnvironmentObject private var settings: SettingsStore
+    @EnvironmentObject private var languages: LanguageManager
 
     var body: some View {
-        Form {
-            // 動的な対応言語リストは Phase 7 で追加する。現状は識別子の直接編集。
-            LabeledContent("Default language") {
-                TextField("locale identifier", text: $settings.defaultLanguageIdentifier)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(width: 180)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("対応言語")
+                    .font(.headline)
+                Spacer()
+                if languages.isLoading {
+                    ProgressView().controlSize(.small)
+                }
+                Button("更新") { Task { await languages.refresh() } }
             }
-            Text("言語のクイック切替・資産ダウンロードは Phase 7 で追加します。")
-                .font(.footnote)
+            Text("録音前に言語を選びます（メニューバーからも切替可能）。未ダウンロードの言語は選択時に取得します。")
+                .font(.caption)
                 .foregroundStyle(.secondary)
+
+            List(languages.options) { option in
+                LanguageRow(option: option)
+            }
+            .frame(maxHeight: .infinity)
         }
-        .formStyle(.grouped)
         .padding()
+        .task { if languages.options.isEmpty { await languages.refresh() } }
+    }
+}
+
+private struct LanguageRow: View {
+    @EnvironmentObject private var settings: SettingsStore
+    @EnvironmentObject private var languages: LanguageManager
+    let option: LanguageManager.LanguageOption
+
+    private var isSelected: Bool {
+        LanguageManager.matches(option, settingIdentifier: settings.defaultLanguageIdentifier)
+    }
+
+    var body: some View {
+        HStack {
+            Image(systemName: isSelected ? "largecircle.fill.circle" : "circle")
+                .foregroundStyle(isSelected ? Color.accentColor : .secondary)
+            Text(option.displayName)
+            Spacer()
+            if option.isInstalled {
+                Label("DL済み", systemImage: "checkmark.circle.fill")
+                    .labelStyle(.iconOnly)
+                    .foregroundStyle(.green)
+            } else {
+                Button("ダウンロード") {
+                    Task { await languages.prepare(option.locale) }
+                }
+                .buttonStyle(.borderless)
+            }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            settings.defaultLanguageIdentifier = option.locale.identifier
+        }
     }
 }
 
