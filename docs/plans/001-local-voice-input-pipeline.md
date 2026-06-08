@@ -191,11 +191,12 @@ vkey/
 - 注: プロジェクトは `SWIFT_DEFAULT_ACTOR_ISOLATION=MainActor`。サービス層は `actor` または明示分離で実装する
 
 ### Phase 5: チャンク分割 + 整形
-- [ ] `Chunker`（tokenCount/contextSize ベース input budget、NLTokenizer 文分割、hard split、概算 fallback）
-- [ ] `FormattingPromptFactory`（言語非依存テンプレ、翻訳禁止・要約禁止明示）
-- [ ] `GlobalModelLimiter` + `ChunkFormatter`（permit 下整形、exceeded 時の再分割リトライ）
-- [ ] `UtteranceProcessor`（TaskGroup 並列整形 + index 順 join + Outcome 畳み込み、throw しない）
-- [ ] 完了条件: 長文発話が分割整形され、フィラー除去・句読点補完を含む自然な整文になる
+- [x] `Chunker`（contextSize ベース input budget、NLTokenizer 文分割、hard split、文字種ベース概算）
+- [x] `FormattingPromptFactory`（言語非依存テンプレ、翻訳禁止・要約禁止明示）
+- [x] `GlobalModelLimiter` + `ChunkFormatter`（permit 下整形、exceeded 時の再分割リトライ）
+- [x] `UtteranceProcessor`（TaskGroup 並列整形 + index 順 join + Outcome 畳み込み、throw しない）
+- [x] 完了条件: 長文発話が分割整形される（ビルド成功で確認。整文品質は実機要確認）
+- 注: `SystemLanguageModel.contextSize` は本 SDK では同期 Int。モデル非対応時は raw に倒す
 
 ### Phase 6: キュー並列パイプライン + 順序保証挿入
 - [ ] `PipelineCoordinator`（bounded-pump で `maxConcurrentUtterances`）

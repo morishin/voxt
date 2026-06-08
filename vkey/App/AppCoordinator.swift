@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import CoreGraphics
+import FoundationModels
 import OSLog
 
 @MainActor
@@ -104,19 +105,43 @@ final class AppCoordinator: ObservableObject {
     // MARK: - Consumer（Phase 6 で PipelineCoordinator に置き換える暫定実装）
 
     private func startConsumer() {
-        consumerTask = Task { [utteranceStream, transcriber] in
+        let maxModelCalls = settings.maxConcurrentModelCalls
+        consumerTask = Task { [utteranceStream, transcriber, settings] in
+            // 処理スタックを 1 度だけ構築する（GlobalModelLimiter は全発話で共有）。
+            let contextSize = SystemLanguageModel.default.contextSize
+            let chunker = Chunker(contextSize: contextSize)
+            let limiter = GlobalModelLimiter(maxConcurrentModelCalls: maxModelCalls)
+            let formatter = ChunkFormatter(limiter: limiter, chunker: chunker)
+            let processor = UtteranceProcessor(transcriber: transcriber, chunker: chunker, formatter: formatter)
+
             for await u in utteranceStream {
                 Log.pipeline.info("received utterance seq=\(u.seq.raw) locale=\(u.locale.identifier, privacy: .public)")
-                do {
-                    let text = try await transcriber.transcribe(audioURL: u.audioURL, locale: u.locale)
-                    // 発話内容は個人情報なので private 扱いでログする。
-                    Log.speech.info("transcript seq=\(u.seq.raw): \(text, privacy: .private)")
-                } catch {
-                    Log.speech.error("transcription failed seq=\(u.seq.raw): \(error.localizedDescription, privacy: .public)")
-                }
-                // Phase 5/6 で整形・挿入を行う。現状は文字起こしまで。
+                let config = await Self.makeConfig(from: settings)
+                let result = await processor.process(u, config: config)
+                Self.logOutcome(result)
+                // Phase 6 で順序保証挿入を行う。現状は処理結果のログまで。
                 try? FileManager.default.removeItem(at: u.audioURL)
             }
+        }
+    }
+
+    /// MainActor の設定から処理設定スナップショットを作る。モデル非対応時は raw に倒す。
+    private static func makeConfig(from settings: SettingsStore) async -> ProcessingConfig {
+        await MainActor.run {
+            let modelAvailable = SystemLanguageModel.default.isAvailable
+            let mode = modelAvailable ? settings.formattingMode : .raw
+            return ProcessingConfig(formattingMode: mode, outputSafetyFactor: settings.outputSafetyFactor)
+        }
+    }
+
+    private static func logOutcome(_ result: ProcessedUtterance) {
+        switch result.outcome {
+        case .formatted(let text):
+            Log.formatting.info("formatted seq=\(result.seq.raw): \(text, privacy: .private)")
+        case .rawFallback(let text, let reason):
+            Log.formatting.info("raw fallback seq=\(result.seq.raw) (\(reason.message, privacy: .public)): \(text, privacy: .private)")
+        case .empty:
+            Log.formatting.info("empty utterance seq=\(result.seq.raw)")
         }
     }
 }
