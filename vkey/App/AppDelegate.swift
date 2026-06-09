@@ -14,10 +14,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let status = PipelineStatusStore()
     lazy var coordinator = AppCoordinator(settings: settings, status: status)
 
+    private var statusItemController: StatusItemController?
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         // .accessory: Dock に出ず、メニューバーのみで常駐する。
         NSApp.setActivationPolicy(.accessory)
         Log.app.info("vkey launched (accessory mode)")
         coordinator.start()
+
+        // メニューバーアイコンは AppKit の NSStatusItem で管理し、Timer で滑らかに明滅させる。
+        statusItemController = StatusItemController(
+            status: status,
+            settings: settings,
+            languages: coordinator.languages,
+            coordinator: coordinator
+        )
     }
 }

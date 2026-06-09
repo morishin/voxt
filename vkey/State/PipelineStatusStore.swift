@@ -36,9 +36,6 @@ final class PipelineStatusStore: ObservableObject {
     /// Foundation Models（Apple Intelligence）が利用可能か。
     @Published var modelAvailable = true
 
-    /// アイコンの滑らかなパルスアニメーション駆動（高頻度更新を分離）。
-    let animator = IconAnimator()
-
     private var enqueuedCount = 0
     private var insertedCount = 0
     private var isRecording = false
@@ -88,7 +85,5 @@ final class PipelineStatusStore: ObservableObject {
         } else {
             state = .ready
         }
-        // 録音中/処理中のみアニメーションさせる。
-        animator.setAnimating(state != .ready)
     }
 }
