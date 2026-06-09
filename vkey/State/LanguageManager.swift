@@ -29,6 +29,15 @@ final class LanguageManager: ObservableObject {
 
     @Published private(set) var options: [LanguageOption] = []
     @Published private(set) var isLoading = false
+    /// ダウンロード中の locale identifier 集合。
+    @Published private(set) var downloadingIdentifiers: Set<String> = []
+
+    /// ダウンロード済みの言語のみ。
+    var installedOptions: [LanguageOption] { options.filter(\.isInstalled) }
+
+    func isDownloading(_ option: LanguageOption) -> Bool {
+        downloadingIdentifiers.contains(option.locale.identifier)
+    }
 
     /// 対応言語リストとインストール状態を再取得する。
     func refresh() async {
@@ -50,6 +59,9 @@ final class LanguageManager: ObservableObject {
 
     /// 指定 locale の資産をダウンロード・インストールし、状態を更新する。
     func prepare(_ locale: Locale) async {
+        let id = locale.identifier
+        downloadingIdentifiers.insert(id)
+        defer { downloadingIdentifiers.remove(id) }
         do {
             let transcriber = SpeechTranscriber(locale: locale, preset: .transcription)
             if let request = try await AssetInventory.assetInstallationRequest(supporting: [transcriber]) {

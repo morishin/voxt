@@ -20,6 +20,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private let settings: SettingsStore
     private let languages: LanguageManager
     private let coordinator: AppCoordinator
+    private let settingsWindow: SettingsWindowController
 
     private enum AnimationMode {
         case none
@@ -41,12 +42,14 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     init(status: PipelineStatusStore,
          settings: SettingsStore,
          languages: LanguageManager,
-         coordinator: AppCoordinator) {
+         coordinator: AppCoordinator,
+         settingsWindow: SettingsWindowController) {
         self.statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         self.status = status
         self.settings = settings
         self.languages = languages
         self.coordinator = coordinator
+        self.settingsWindow = settingsWindow
         super.init()
 
         let menu = NSMenu()
@@ -186,11 +189,12 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     private func makeLanguageMenu() -> NSMenu {
         let submenu = NSMenu()
-        if languages.options.isEmpty {
-            submenu.addItem(disabledItem("読み込み中…"))
+        let installed = languages.installedOptions
+        if installed.isEmpty {
+            submenu.addItem(disabledItem("ダウンロード済みの言語がありません"))
         }
-        for option in languages.options {
-            let item = NSMenuItem(title: languageLabel(for: option), action: #selector(selectLanguage(_:)), keyEquivalent: "")
+        for option in installed {
+            let item = NSMenuItem(title: option.displayName, action: #selector(selectLanguage(_:)), keyEquivalent: "")
             item.target = self
             item.representedObject = option.locale.identifier
             if LanguageManager.matches(option, settingIdentifier: settings.defaultLanguageIdentifier) {
@@ -199,9 +203,10 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             submenu.addItem(item)
         }
         submenu.addItem(.separator())
-        let refresh = NSMenuItem(title: "言語リストを更新", action: #selector(refreshLanguages), keyEquivalent: "")
-        refresh.target = self
-        submenu.addItem(refresh)
+        // 他の言語は設定画面の Language タブで追加ダウンロードする。
+        let other = NSMenuItem(title: "他の言語…", action: #selector(openLanguageSettings), keyEquivalent: "")
+        other.target = self
+        submenu.addItem(other)
         return submenu
     }
 
@@ -215,10 +220,6 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         LanguageManager.displayName(forIdentifier: settings.defaultLanguageIdentifier)
     }
 
-    private func languageLabel(for option: LanguageManager.LanguageOption) -> String {
-        option.isInstalled ? option.displayName : option.displayName + "（未ダウンロード）"
-    }
-
     // MARK: - Actions
 
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
@@ -230,13 +231,12 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     @objc private func selectLanguage(_ sender: NSMenuItem) {
         guard let identifier = sender.representedObject as? String else { return }
+        // メニューに出るのはダウンロード済みのみなので、そのまま選択する。
         settings.defaultLanguageIdentifier = identifier
-        if let option = languages.options.first(where: { $0.locale.identifier == identifier }), !option.isInstalled {
-            Task { await languages.prepare(option.locale) }
-        }
     }
 
-    @objc private func refreshLanguages() {
+    @objc private func openLanguageSettings() {
+        settingsWindow.show(tab: .language)
         Task { await languages.refresh() }
     }
 
@@ -245,8 +245,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     }
 
     @objc private func openSettings() {
-        NSApp.activate(ignoringOtherApps: true)
-        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        settingsWindow.show()
     }
 
     @objc private func quit() {

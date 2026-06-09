@@ -8,24 +8,33 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @EnvironmentObject private var navigation: SettingsNavigation
+
     var body: some View {
-        TabView {
+        TabView(selection: $navigation.selectedTab) {
             GeneralSettingsView()
                 .tabItem { Label("General", systemImage: "gear") }
+                .tag(SettingsTab.general)
             PermissionsView()
                 .tabItem { Label("Permissions", systemImage: "lock.shield") }
+                .tag(SettingsTab.permissions)
             RecordingSettingsView()
                 .tabItem { Label("Recording", systemImage: "mic") }
+                .tag(SettingsTab.recording)
             LanguageSettingsView()
                 .tabItem { Label("Language", systemImage: "globe") }
+                .tag(SettingsTab.language)
             FormattingSettingsView()
                 .tabItem { Label("Formatting", systemImage: "text.badge.checkmark") }
+                .tag(SettingsTab.formatting)
             InsertionSettingsView()
                 .tabItem { Label("Insertion", systemImage: "text.cursor") }
+                .tag(SettingsTab.insertion)
             DiagnosticsSettingsView()
                 .tabItem { Label("Diagnostics", systemImage: "stethoscope") }
+                .tag(SettingsTab.diagnostics)
         }
-        .frame(width: 460, height: 320)
+        .frame(width: 480, height: 360)
     }
 }
 
@@ -114,16 +123,27 @@ private struct LanguageRow: View {
         LanguageManager.matches(option, settingIdentifier: settings.defaultLanguageIdentifier)
     }
 
+    private var isDownloading: Bool { languages.isDownloading(option) }
+
     var body: some View {
-        HStack {
+        HStack(spacing: 8) {
             Image(systemName: isSelected ? "largecircle.fill.circle" : "circle")
                 .foregroundStyle(isSelected ? Color.accentColor : .secondary)
             Text(option.displayName)
+                // 未ダウンロードは選択不可なので淡色表示。
+                .foregroundStyle(option.isInstalled ? .primary : .secondary)
             Spacer()
             if option.isInstalled {
                 Label("DL済み", systemImage: "checkmark.circle.fill")
                     .labelStyle(.iconOnly)
                     .foregroundStyle(.green)
+            } else if isDownloading {
+                HStack(spacing: 6) {
+                    ProgressView().controlSize(.small)
+                    Text("ダウンロード中…")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             } else {
                 Button("ダウンロード") {
                     Task { await languages.prepare(option.locale) }
@@ -133,6 +153,8 @@ private struct LanguageRow: View {
         }
         .contentShape(Rectangle())
         .onTapGesture {
+            // ダウンロード済みのみ選択可能。
+            guard option.isInstalled else { return }
             settings.defaultLanguageIdentifier = option.locale.identifier
         }
     }

@@ -12,13 +12,11 @@ struct vkeyApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        // メニューバーアイコンとメニューは AppDelegate の StatusItemController(AppKit)が管理する。
-        // ここでは設定ウィンドウのみ提供する。
+        // メニューバー・アイコン・設定ウィンドウはすべて AppDelegate の
+        // StatusItemController / SettingsWindowController(AppKit)が管理する。
+        // SwiftUI App は最低 1 つの Scene を要求するため、空の Settings を置くだけ。
         Settings {
-            SettingsView()
-                .environmentObject(appDelegate.settings)
-                .environmentObject(appDelegate.coordinator.permissions)
-                .environmentObject(appDelegate.coordinator.languages)
+            EmptyView()
         }
     }
 }

@@ -14,6 +14,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let status = PipelineStatusStore()
     lazy var coordinator = AppCoordinator(settings: settings, status: status)
 
+    private let settingsNavigation = SettingsNavigation()
+    private var settingsWindowController: SettingsWindowController?
     private var statusItemController: StatusItemController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -22,12 +24,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Log.app.info("vkey launched (accessory mode)")
         coordinator.start()
 
-        // メニューバーアイコンは AppKit の NSStatusItem で管理し、Timer で滑らかに明滅させる。
+        // 設定画面は自前の NSWindow で管理する（AppKit から SwiftUI Settings を開けないため）。
+        let settingsWindow = SettingsWindowController(
+            settings: settings,
+            permissions: coordinator.permissions,
+            languages: coordinator.languages,
+            navigation: settingsNavigation
+        )
+        settingsWindowController = settingsWindow
+
+        // メニューバーアイコンは AppKit の NSStatusItem で管理し、Timer でアニメーションさせる。
         statusItemController = StatusItemController(
             status: status,
             settings: settings,
             languages: coordinator.languages,
-            coordinator: coordinator
+            coordinator: coordinator,
+            settingsWindow: settingsWindow
         )
     }
 }
