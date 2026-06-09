@@ -3,15 +3,16 @@
 //  vkey
 //
 //  メニューバーに表示する状態アイコン。
-//  MenuBarExtra のラベルは symbolEffect が効かないため、blinkOn の反転で点滅させる。
+//  MenuBarExtra のラベルは symbolEffect が効かないため、IconAnimator の pulse(0...1)を
+//  opacity にマッピングして滑らかに明滅させる。
 //
 
 import SwiftUI
 
 struct StatusIcon: View {
     let state: PipelineStatusStore.UIState
-    /// 点滅フラグ（PipelineStatusStore が Timer で反転）。
-    var blinkOn: Bool = true
+    /// 0...1 のパルス値（IconAnimator が高頻度更新）。
+    var pulse: Double = 1.0
 
     var body: some View {
         switch state {
@@ -19,14 +20,18 @@ struct StatusIcon: View {
             Image(systemName: "mic")
                 .symbolRenderingMode(.hierarchical)
         case .recording:
-            // 録音中: 塗り↔輪郭でハッキリ点滅。
-            Image(systemName: blinkOn ? "mic.fill" : "mic")
+            Image(systemName: "mic.fill")
                 .symbolRenderingMode(.hierarchical)
+                .opacity(opacity)
         case .processing:
-            // 処理中: 波形を薄く↔濃く点滅。
             Image(systemName: "waveform")
                 .symbolRenderingMode(.hierarchical)
-                .opacity(blinkOn ? 1.0 : 0.4)
+                .opacity(opacity)
         }
+    }
+
+    /// pulse(0...1) を 0.3...1.0 の opacity へマッピング。
+    private var opacity: Double {
+        0.3 + 0.7 * pulse
     }
 }

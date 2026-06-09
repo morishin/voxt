@@ -20,7 +20,7 @@ struct vkeyApp: App {
                 .environmentObject(appDelegate.coordinator.permissions)
                 .environmentObject(appDelegate.coordinator.languages)
         } label: {
-            MenuBarLabel(status: appDelegate.status)
+            MenuBarLabel(status: appDelegate.status, animator: appDelegate.status.animator)
         }
 
         Settings {
@@ -35,8 +35,9 @@ struct vkeyApp: App {
 /// メニューバーラベル。状態変化に追従させるため ObservedObject で購読する。
 private struct MenuBarLabel: View {
     @ObservedObject var status: PipelineStatusStore
+    @ObservedObject var animator: IconAnimator
 
     var body: some View {
-        StatusIcon(state: status.state, blinkOn: status.blinkOn)
+        StatusIcon(state: status.state, pulse: animator.pulse)
     }
 }
