@@ -15,7 +15,6 @@ final class SettingsStore: ObservableObject {
     private enum Key {
         static let formattingMode = "formattingMode"
         static let insertionMode = "insertionMode"
-        static let maxRecordingSeconds = "maxRecordingSeconds"
         static let defaultLanguageIdentifier = "defaultLanguageIdentifier"
         static let maxConcurrentModelCalls = "maxConcurrentModelCalls"
         static let maxConcurrentUtterances = "maxConcurrentUtterances"
@@ -29,9 +28,6 @@ final class SettingsStore: ObservableObject {
     private let defaults: UserDefaults
 
     // MARK: - Recording
-    @Published var maxRecordingSeconds: Double {
-        didSet { defaults.set(maxRecordingSeconds, forKey: Key.maxRecordingSeconds) }
-    }
     /// Push-to-talk に使うキーの CGKeyCode。初期値は Right Command (0x36)。
     @Published var hotKeyKeyCode: Int {
         didSet { defaults.set(hotKeyKeyCode, forKey: Key.hotKeyKeyCode) }
@@ -85,7 +81,6 @@ final class SettingsStore: ObservableObject {
         defaults.register(defaults: [
             Key.formattingMode: FormattingMode.light.rawValue,
             Key.insertionMode: InsertionMode.auto.rawValue,
-            Key.maxRecordingSeconds: 60.0,
             Key.defaultLanguageIdentifier: Locale.current.identifier,
             Key.maxConcurrentModelCalls: 1,
             Key.maxConcurrentUtterances: 2,
@@ -98,7 +93,6 @@ final class SettingsStore: ObservableObject {
 
         self.formattingMode = FormattingMode(rawValue: defaults.string(forKey: Key.formattingMode) ?? "") ?? .light
         self.insertionMode = InsertionMode(rawValue: defaults.string(forKey: Key.insertionMode) ?? "") ?? .auto
-        self.maxRecordingSeconds = defaults.double(forKey: Key.maxRecordingSeconds)
         self.defaultLanguageIdentifier = defaults.string(forKey: Key.defaultLanguageIdentifier) ?? Locale.current.identifier
         self.maxConcurrentModelCalls = defaults.integer(forKey: Key.maxConcurrentModelCalls)
         self.maxConcurrentUtterances = defaults.integer(forKey: Key.maxConcurrentUtterances)

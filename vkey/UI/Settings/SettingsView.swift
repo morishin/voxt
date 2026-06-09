@@ -63,14 +63,6 @@ struct RecordingSettingsView: View {
 
     var body: some View {
         Form {
-            LabeledContent("Max recording duration") {
-                HStack {
-                    Slider(value: $settings.maxRecordingSeconds, in: 10...300, step: 5)
-                    Text("\(Int(settings.maxRecordingSeconds)) s")
-                        .monospacedDigit()
-                        .frame(width: 48, alignment: .trailing)
-                }
-            }
             LabeledContent("Push-to-talk key") {
                 Button(action: toggleHotkeyRecording) {
                     Text(hotkeyButtonTitle)

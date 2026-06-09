@@ -124,12 +124,14 @@ final class AppCoordinator: ObservableObject {
 
     /// この秒数未満の録音は誤タップとみなして破棄する。
     private let minRecordingSeconds: TimeInterval = 0.3
+    /// keyUp の取りこぼし等で録音が止まらなくなるのを防ぐ安全上限（ユーザー設定ではない）。
+    private let maxRecordingSeconds: TimeInterval = 300
     private var recordingStartedAt: Date?
 
     private func startRecording() {
         guard !capture.recording else { return }
         do {
-            _ = try capture.start(maxSeconds: settings.maxRecordingSeconds)
+            _ = try capture.start(maxSeconds: maxRecordingSeconds)
             recordingStartedAt = Date()
             status.recordingStarted()
         } catch {
