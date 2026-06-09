@@ -119,17 +119,17 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
         menu.addItem(disabledItem(status.state.label))
         if !status.modelAvailable {
-            menu.addItem(disabledItem("⚠︎ Apple Intelligence が無効のため整形なしで挿入します"))
+            menu.addItem(disabledItem("⚠︎ " + String(localized: "Apple Intelligence is off, so text is inserted without formatting")))
         }
         menu.addItem(.separator())
 
         // 言語クイック切替
-        let languageItem = NSMenuItem(title: "Language: \(currentLanguageName)", action: nil, keyEquivalent: "")
+        let languageItem = NSMenuItem(title: String(localized: "Language: \(currentLanguageName)"), action: nil, keyEquivalent: "")
         languageItem.submenu = makeLanguageMenu()
         menu.addItem(languageItem)
 
-        // Last Result をコピー
-        let copyItem = NSMenuItem(title: "Last Result をコピー", action: #selector(copyLastResult), keyEquivalent: "")
+        // 直近の結果をコピー
+        let copyItem = NSMenuItem(title: String(localized: "Copy Last Result"), action: #selector(copyLastResult), keyEquivalent: "")
         copyItem.target = self
         menu.addItem(copyItem)
 
@@ -137,11 +137,11 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
         // 歯車アイコンは macOS が「設定」項目に自動付与するもので消せないため、
         // 標準どおり ⌘, ショートカットを付けたままにする。
-        let settingsItem = NSMenuItem(title: "Settings…", action: #selector(openSettings), keyEquivalent: ",")
+        let settingsItem = NSMenuItem(title: String(localized: "Settings…"), action: #selector(openSettings), keyEquivalent: ",")
         settingsItem.target = self
         menu.addItem(settingsItem)
 
-        let quitItem = NSMenuItem(title: "Quit vkey", action: #selector(quit), keyEquivalent: "q")
+        let quitItem = NSMenuItem(title: String(localized: "Quit vkey"), action: #selector(quit), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
     }
@@ -150,7 +150,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         let submenu = NSMenu()
         let installed = languages.installedOptions
         if installed.isEmpty {
-            submenu.addItem(disabledItem("ダウンロード済みの言語がありません"))
+            submenu.addItem(disabledItem(String(localized: "No downloaded languages")))
         }
         for option in installed {
             let item = NSMenuItem(title: option.displayName, action: #selector(selectLanguage(_:)), keyEquivalent: "")
@@ -163,7 +163,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         }
         submenu.addItem(.separator())
         // 他の言語は設定画面の Language タブで追加ダウンロードする。
-        let other = NSMenuItem(title: "他の言語…", action: #selector(openLanguageSettings), keyEquivalent: "")
+        let other = NSMenuItem(title: String(localized: "Other languages…"), action: #selector(openLanguageSettings), keyEquivalent: "")
         other.target = self
         submenu.addItem(other)
         return submenu

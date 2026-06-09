@@ -208,9 +208,8 @@ final class AppCoordinator: ObservableObject {
     private static func showInsertionFailedAlert() {
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = "テキストを挿入できませんでした"
-        alert.informativeText = "内容はクリップボードに保存しました。貼り付けたい場所を選んで ⌘V で貼り付けてください。"
-        alert.addButton(withTitle: "OK")
+        alert.messageText = String(localized: "Couldn't insert text")
+        alert.informativeText = String(localized: "The text was saved to the clipboard. Select where you want it and paste with ⌘V.")
         NSApp.activate(ignoringOtherApps: true)
         alert.runModal()
     }

@@ -21,9 +21,9 @@ final class PipelineStatusStore: ObservableObject {
 
         var label: String {
             switch self {
-            case .ready: return "Ready"
-            case .recording: return "Recording…"
-            case .processing(let n): return n > 0 ? "Processing (\(n))" : "Processing…"
+            case .ready: return String(localized: "Ready")
+            case .recording: return String(localized: "Recording…")
+            case .processing(let n): return n > 0 ? String(localized: "Processing (\(n))") : String(localized: "Processing…")
             }
         }
     }

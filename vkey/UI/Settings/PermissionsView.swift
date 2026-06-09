@@ -34,9 +34,9 @@ struct PermissionRow: View {
         case .granted:
             Text(state.label).foregroundStyle(.secondary)
         case .notDetermined:
-            Button("許可") { request() }
+            Button("Allow") { request() }
         case .denied:
-            Button("システム設定を開く") { permissions.openSettings(for: kind) }
+            Button("Open System Settings") { permissions.openSettings(for: kind) }
         }
     }
 

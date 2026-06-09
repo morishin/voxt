@@ -19,9 +19,9 @@ enum PermissionState: Equatable, Sendable {
 
     var label: String {
         switch self {
-        case .notDetermined: return "未確認"
-        case .granted: return "許可済み"
-        case .denied: return "未許可"
+        case .notDetermined: return String(localized: "Not determined")
+        case .granted: return String(localized: "Granted")
+        case .denied: return String(localized: "Not granted")
         }
     }
 
@@ -45,19 +45,19 @@ enum PermissionKind: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .microphone: return "マイク"
-        case .speechRecognition: return "音声認識"
-        case .accessibility: return "アクセシビリティ"
-        case .inputMonitoring: return "入力監視"
+        case .microphone: return String(localized: "Microphone")
+        case .speechRecognition: return String(localized: "Speech Recognition")
+        case .accessibility: return String(localized: "Accessibility")
+        case .inputMonitoring: return String(localized: "Input Monitoring")
         }
     }
 
     var purpose: String {
         switch self {
-        case .microphone: return "録音に使用します。"
-        case .speechRecognition: return "録音音声の文字起こしに使用します。"
-        case .accessibility: return "フォーカス中アプリへのテキスト挿入に使用します。"
-        case .inputMonitoring: return "Push-to-talk のキー監視に使用します。"
+        case .microphone: return String(localized: "Used for recording.")
+        case .speechRecognition: return String(localized: "Used to transcribe recorded audio.")
+        case .accessibility: return String(localized: "Used to insert text into the focused app.")
+        case .inputMonitoring: return String(localized: "Used to monitor the push-to-talk key.")
         }
     }
 

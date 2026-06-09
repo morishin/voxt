@@ -14,10 +14,10 @@ struct SettingsView: View {
     var body: some View {
         TabView(selection: $navigation.selectedTab) {
             GeneralSettingsView()
-                .tabItem { Text("一般") }
+                .tabItem { Text("General") }
                 .tag(SettingsTab.general)
             LanguageSettingsView()
-                .tabItem { Text("言語") }
+                .tabItem { Text("Language") }
                 .tag(SettingsTab.language)
         }
         .frame(width: 460, height: 460)
@@ -45,31 +45,31 @@ struct GeneralSettingsView: View {
                     ForEach(missingPermissions) { kind in
                         PermissionRow(kind: kind, state: permissions.state(for: kind))
                     }
-                    Button("再チェック") { permissions.refresh() }
+                    Button("Re-check") { permissions.refresh() }
                 } header: {
-                    Label("vkey を使うには権限の許可が必要です", systemImage: "exclamationmark.triangle.fill")
+                    Label("vkey needs permission to work", systemImage: "exclamationmark.triangle.fill")
                         .foregroundStyle(.orange)
                         .font(.headline)
                 }
             }
 
-            Section("一般") {
-                Toggle("ログイン時に起動", isOn: $settings.launchAtLogin)
+            Section("General") {
+                Toggle("Launch at login", isOn: $settings.launchAtLogin)
             }
 
-            Section("ホットキー") {
-                LabeledContent("Push-to-talk キー") {
+            Section("Hotkey") {
+                LabeledContent("Push-to-talk key") {
                     Button(action: toggleHotkeyRecording) {
                         Text(hotkeyButtonTitle).frame(minWidth: 150)
                     }
                 }
-                Text("ボタンを押してから、ホットキーにしたいキーを 1 つ押してください（Esc でキャンセル）。押している間だけ録音されるので、Right Command などの修飾キーや F キーが向いています。")
+                Text("Press the button, then press the single key you want as the hotkey (Esc to cancel). Recording happens only while the key is held, so modifier keys such as Right Command or the function keys work well.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
-            Section("整形") {
-                Picker("整形モード", selection: $settings.formattingMode) {
+            Section("Formatting") {
+                Picker("Formatting mode", selection: $settings.formattingMode) {
                     ForEach(FormattingMode.allCases) { mode in
                         Text(mode.displayName).tag(mode)
                     }
@@ -84,9 +84,9 @@ struct GeneralSettingsView: View {
             if settings.formattingMode != .raw {
                 Section {
                     TextField(
-                        "カスタム整形指示",
+                        "Custom formatting instructions",
                         text: $settings.customFormattingInstruction,
-                        prompt: Text("例: だ・である調に統一する / 箇条書きは行頭に「・」を付ける"),
+                        prompt: Text("e.g. Use a formal tone / Prefix bullet points with a dash"),
                         axis: .vertical
                     )
                     .textFieldStyle(.roundedBorder)
@@ -94,15 +94,15 @@ struct GeneralSettingsView: View {
                     .lineLimit(3, reservesSpace: true)
 
                     HStack {
-                        Text("整形時に追加で守ってほしいルールを書けます（翻訳・要約はされません）。")
+                        Text("Add extra rules to apply when formatting (no translation or summarizing).")
                         Spacer()
-                        Text("\(settings.customFormattingInstruction.count)/\(SettingsStore.maxCustomInstructionLength)")
+                        Text(verbatim: "\(settings.customFormattingInstruction.count)/\(SettingsStore.maxCustomInstructionLength)")
                             .monospacedDigit()
                     }
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 } header: {
-                    Text("カスタム整形指示（任意）")
+                    Text("Custom formatting instructions (optional)")
                 }
             }
 
@@ -117,7 +117,7 @@ struct GeneralSettingsView: View {
 
     private var hotkeyButtonTitle: String {
         isRecordingHotkey
-            ? "キーを押してください…"
+            ? String(localized: "Press a key…")
             : HotkeyMonitor.displayName(for: CGKeyCode(settings.hotKeyKeyCode))
     }
 
@@ -177,15 +177,15 @@ struct LanguageSettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("対応言語")
+                Text("Supported languages")
                     .font(.headline)
                 Spacer()
                 if languages.isLoading {
                     ProgressView().controlSize(.small)
                 }
-                Button("更新") { Task { await languages.refresh() } }
+                Button("Refresh") { Task { await languages.refresh() } }
             }
-            Text("録音前に言語を選びます（メニューバーからも切替可能）。未ダウンロードの言語はダウンロード後に選べます。")
+            Text("Choose the language before recording (also switchable from the menu bar). Languages that aren't downloaded become selectable after downloading.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
@@ -231,18 +231,18 @@ private struct LanguageRow: View {
             if option.isInstalled {
                 // OS 管理（システム言語など）はアプリから削除できないのでボタンを出さない。
                 if option.isRemovable {
-                    Button("削除") { delete() }
+                    Button("Delete") { delete() }
                         .buttonStyle(.borderless)
                 }
             } else if isDownloading {
                 HStack(spacing: 6) {
                     ProgressView().controlSize(.small)
-                    Text("ダウンロード中…")
+                    Text("Downloading…")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
             } else {
-                Button("ダウンロード") {
+                Button("Download") {
                     Task { await languages.prepare(option.locale) }
                 }
                 .buttonStyle(.borderless)
