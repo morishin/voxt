@@ -10,12 +10,7 @@ import Combine
 
 enum SettingsTab: String, Hashable, CaseIterable {
     case general
-    case permissions
-    case recording
     case language
-    case formatting
-    case insertion
-    case diagnostics
 }
 
 @MainActor

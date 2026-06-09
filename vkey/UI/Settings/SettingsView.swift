@@ -2,7 +2,7 @@
 //  SettingsView.swift
 //  vkey
 //
-//  設定画面。タブで General / Recording / Language / Formatting / Insertion / Diagnostics を切り替える。
+//  設定画面。タブは「一般」（各種設定を集約）と「言語」（対応言語の選択・DL）の 2 つ。
 //
 
 import SwiftUI
@@ -14,69 +14,75 @@ struct SettingsView: View {
     var body: some View {
         TabView(selection: $navigation.selectedTab) {
             GeneralSettingsView()
-                .tabItem { Label("General", systemImage: "gear") }
+                .tabItem { Label("一般", systemImage: "gearshape") }
                 .tag(SettingsTab.general)
-            PermissionsView()
-                .tabItem { Label("Permissions", systemImage: "lock.shield") }
-                .tag(SettingsTab.permissions)
-            RecordingSettingsView()
-                .tabItem { Label("Recording", systemImage: "mic") }
-                .tag(SettingsTab.recording)
             LanguageSettingsView()
-                .tabItem { Label("Language", systemImage: "globe") }
+                .tabItem { Label("言語", systemImage: "globe") }
                 .tag(SettingsTab.language)
-            FormattingSettingsView()
-                .tabItem { Label("Formatting", systemImage: "text.badge.checkmark") }
-                .tag(SettingsTab.formatting)
-            InsertionSettingsView()
-                .tabItem { Label("Insertion", systemImage: "text.cursor") }
-                .tag(SettingsTab.insertion)
-            DiagnosticsSettingsView()
-                .tabItem { Label("Diagnostics", systemImage: "stethoscope") }
-                .tag(SettingsTab.diagnostics)
         }
-        .frame(width: 480, height: 360)
+        .frame(width: 460, height: 460)
     }
 }
 
-// MARK: - General
+// MARK: - 一般（各種設定を集約）
 
 struct GeneralSettingsView: View {
     @EnvironmentObject private var settings: SettingsStore
+    @EnvironmentObject private var permissions: PermissionManager
 
-    var body: some View {
-        Form {
-            Toggle("Launch at login", isOn: $settings.launchAtLogin)
-            Toggle("Show notifications", isOn: $settings.showNotifications)
-        }
-        .formStyle(.grouped)
-        .padding()
-    }
-}
-
-// MARK: - Recording
-
-struct RecordingSettingsView: View {
-    @EnvironmentObject private var settings: SettingsStore
     @State private var isRecordingHotkey = false
     @State private var eventMonitor: Any?
 
     var body: some View {
         Form {
-            LabeledContent("Push-to-talk key") {
-                Button(action: toggleHotkeyRecording) {
-                    Text(hotkeyButtonTitle)
-                        .frame(minWidth: 150)
+            Section("一般") {
+                Toggle("ログイン時に起動", isOn: $settings.launchAtLogin)
+                Toggle("通知を表示", isOn: $settings.showNotifications)
+            }
+
+            Section("ホットキー") {
+                LabeledContent("Push-to-talk キー") {
+                    Button(action: toggleHotkeyRecording) {
+                        Text(hotkeyButtonTitle).frame(minWidth: 150)
+                    }
+                }
+                Text("ボタンを押してから、ホットキーにしたいキーを 1 つ押してください（Esc でキャンセル）。押している間だけ録音されるので、Right Command などの修飾キーや F キーが向いています。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section("整形") {
+                Picker("整形モード", selection: $settings.formattingMode) {
+                    ForEach(FormattingMode.allCases) { mode in
+                        Text(mode.displayName).tag(mode)
+                    }
                 }
             }
-            Text("ボタンを押してから、ホットキーにしたいキーを 1 つ押してください（Esc でキャンセル）。押している間だけ録音されるので、Right Command などの修飾キーや F キーが向いています。")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+
+            Section("挿入") {
+                Picker("挿入方式", selection: $settings.insertionMode) {
+                    ForEach(InsertionMode.allCases) { mode in
+                        Text(mode.displayName).tag(mode)
+                    }
+                }
+            }
+
+            Section {
+                ForEach(PermissionKind.allCases) { kind in
+                    PermissionRow(kind: kind, state: permissions.state(for: kind))
+                }
+                Button("再チェック") { permissions.refresh() }
+            } header: {
+                Text("権限")
+            }
         }
         .formStyle(.grouped)
         .padding()
+        .task { permissions.refresh() }
         .onDisappear { stopHotkeyRecording() }
     }
+
+    // MARK: Hotkey recorder
 
     private var hotkeyButtonTitle: String {
         isRecordingHotkey
@@ -131,7 +137,7 @@ struct RecordingSettingsView: View {
     }
 }
 
-// MARK: - Language
+// MARK: - 言語
 
 struct LanguageSettingsView: View {
     @EnvironmentObject private var settings: SettingsStore
@@ -148,7 +154,7 @@ struct LanguageSettingsView: View {
                 }
                 Button("更新") { Task { await languages.refresh() } }
             }
-            Text("録音前に言語を選びます（メニューバーからも切替可能）。未ダウンロードの言語は選択時に取得します。")
+            Text("録音前に言語を選びます（メニューバーからも切替可能）。未ダウンロードの言語はダウンロード後に選べます。")
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
@@ -205,64 +211,5 @@ private struct LanguageRow: View {
             guard option.isInstalled else { return }
             settings.defaultLanguageIdentifier = option.locale.identifier
         }
-    }
-}
-
-// MARK: - Formatting
-
-struct FormattingSettingsView: View {
-    @EnvironmentObject private var settings: SettingsStore
-
-    var body: some View {
-        Form {
-            Picker("Formatting mode", selection: $settings.formattingMode) {
-                ForEach(FormattingMode.allCases) { mode in
-                    Text(mode.displayName).tag(mode)
-                }
-            }
-        }
-        .formStyle(.grouped)
-        .padding()
-    }
-}
-
-// MARK: - Insertion
-
-struct InsertionSettingsView: View {
-    @EnvironmentObject private var settings: SettingsStore
-
-    var body: some View {
-        Form {
-            Picker("Insertion mode", selection: $settings.insertionMode) {
-                ForEach(InsertionMode.allCases) { mode in
-                    Text(mode.displayName).tag(mode)
-                }
-            }
-        }
-        .formStyle(.grouped)
-        .padding()
-    }
-}
-
-// MARK: - Diagnostics
-
-struct DiagnosticsSettingsView: View {
-    @EnvironmentObject private var settings: SettingsStore
-
-    var body: some View {
-        Form {
-            Toggle("Enable debug logging", isOn: $settings.enableDebugLogging)
-            Section("並列度（実測で調整）") {
-                Stepper("Max concurrent model calls: \(settings.maxConcurrentModelCalls)",
-                        value: $settings.maxConcurrentModelCalls, in: 1...8)
-                Stepper("Max concurrent utterances: \(settings.maxConcurrentUtterances)",
-                        value: $settings.maxConcurrentUtterances, in: 1...8)
-                Text("並列度の変更はアプリ再起動後に反映されます。on-device モデルは直列化される場合があるため、効果は実測で確認してください。")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .formStyle(.grouped)
-        .padding()
     }
 }

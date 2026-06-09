@@ -2,31 +2,12 @@
 //  PermissionsView.swift
 //  vkey
 //
-//  権限の状態一覧と、要求・システム設定誘導・再チェックの UI。
+//  権限の状態行。設定画面「一般」タブの権限セクションで使う。
 //
 
 import SwiftUI
 
-struct PermissionsView: View {
-    @EnvironmentObject private var permissions: PermissionManager
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            ForEach(PermissionKind.allCases) { kind in
-                PermissionRow(kind: kind, state: permissions.state(for: kind))
-            }
-            Spacer()
-            HStack {
-                Spacer()
-                Button("再チェック") { permissions.refresh() }
-            }
-        }
-        .padding()
-        .onAppear { permissions.refresh() }
-    }
-}
-
-private struct PermissionRow: View {
+struct PermissionRow: View {
     @EnvironmentObject private var permissions: PermissionManager
     let kind: PermissionKind
     let state: PermissionState
