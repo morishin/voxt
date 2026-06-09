@@ -22,24 +22,11 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private let coordinator: AppCoordinator
     private let settingsWindow: SettingsWindowController
 
-    private enum AnimationMode {
-        case none
-        case pulse  // 録音中: 明滅
-        case spin   // 処理中: 回転スピナー
-    }
-
     private var cancellables: Set<AnyCancellable> = []
     private var animationTimer: Timer?
     private var phase: Double = 0
-    private var mode: AnimationMode = .none
     private let frameInterval: TimeInterval = 1.0 / 20.0
     private let pulsePeriod: TimeInterval = 1.6   // 明滅 1 周期
-
-    /// 処理中スピナーの回転フレーム。起動時に 1 度だけ事前生成してキャッシュし、
-    /// 再生時はキャッシュ画像を差し替えるだけにする（毎フレーム描画しない）。
-    private let spinFrameCount = 20  // 20fps で 1 周 1 秒
-    private lazy var spinnerFrames: [NSImage] = Self.makeRotationFrames("progress.indicator", count: spinFrameCount)
-    private var spinIndex = 0
 
     init(status: PipelineStatusStore,
          settings: SettingsStore,
@@ -76,18 +63,13 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private func applyState(_ state: PipelineStatusStore.UIState) {
         switch state {
         case .ready:
-            mode = .none
             setImage("mic")
             stopAnimation()
         case .recording:
-            mode = .pulse
             setImage("mic.fill")
             startAnimation()
         case .processing:
-            mode = .spin
-            spinIndex = 0
-            statusItem.button?.alphaValue = 1.0
-            statusItem.button?.image = spinnerFrames.first ?? Self.symbolImage("progress.indicator")
+            setImage("ellipsis.bubble")
             startAnimation()
         }
     }
@@ -106,7 +88,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         return image
     }
 
-    // MARK: - Animation（Timer で明滅 or 回転）
+    // MARK: - Animation（Timer で alpha を明滅）
 
     private func startAnimation() {
         guard animationTimer == nil else { return }
@@ -125,44 +107,9 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     }
 
     private func tick() {
-        switch mode {
-        case .pulse:
-            phase += frameInterval
-            let pulse = (sin(phase * 2 * .pi / pulsePeriod) + 1) / 2
-            statusItem.button?.alphaValue = 0.3 + 0.7 * pulse
-        case .spin:
-            // 事前生成済みフレームを差し替えるだけ（描画コストゼロ）。
-            guard !spinnerFrames.isEmpty else { return }
-            spinIndex = (spinIndex + 1) % spinnerFrames.count
-            statusItem.button?.image = spinnerFrames[spinIndex]
-        case .none:
-            break
-        }
-    }
-
-    /// 回転フレームを事前生成する（時計回り、count 枚で 1 周）。
-    private static func makeRotationFrames(_ symbolName: String, count: Int) -> [NSImage] {
-        guard let base = symbolImage(symbolName) else { return [] }
-        return (0..<count).map { i in
-            let angle = -2 * CGFloat.pi * CGFloat(i) / CGFloat(count)
-            return rotated(base, by: angle)
-        }
-    }
-
-    /// NSImage を中心まわりに回転した新しいテンプレート画像を返す。
-    private static func rotated(_ base: NSImage, by radians: CGFloat) -> NSImage {
-        let size = base.size
-        let image = NSImage(size: size)
-        image.lockFocus()
-        if let ctx = NSGraphicsContext.current?.cgContext {
-            ctx.translateBy(x: size.width / 2, y: size.height / 2)
-            ctx.rotate(by: radians)
-            ctx.translateBy(x: -size.width / 2, y: -size.height / 2)
-        }
-        base.draw(in: NSRect(origin: .zero, size: size))
-        image.unlockFocus()
-        image.isTemplate = true
-        return image
+        phase += frameInterval
+        let pulse = (sin(phase * 2 * .pi / pulsePeriod) + 1) / 2
+        statusItem.button?.alphaValue = 0.3 + 0.7 * pulse
     }
 
     // MARK: - Menu (開く度に動的に再構築)
