@@ -18,7 +18,6 @@ final class SettingsStore: ObservableObject {
         static let defaultLanguageIdentifier = "defaultLanguageIdentifier"
         static let maxConcurrentModelCalls = "maxConcurrentModelCalls"
         static let maxConcurrentUtterances = "maxConcurrentUtterances"
-        static let outputSafetyFactor = "outputSafetyFactor"
         static let launchAtLogin = "launchAtLogin"
         static let showNotifications = "showNotifications"
         static let enableDebugLogging = "enableDebugLogging"
@@ -42,10 +41,6 @@ final class SettingsStore: ObservableObject {
     // MARK: - Formatting
     @Published var formattingMode: FormattingMode {
         didSet { defaults.set(formattingMode.rawValue, forKey: Key.formattingMode) }
-    }
-    /// 整文で「出力 ≈ 入力」を見込む安全係数。チャンクサイズ計算に使う。
-    @Published var outputSafetyFactor: Double {
-        didSet { defaults.set(outputSafetyFactor, forKey: Key.outputSafetyFactor) }
     }
 
     // MARK: - Insertion
@@ -84,7 +79,6 @@ final class SettingsStore: ObservableObject {
             Key.defaultLanguageIdentifier: Locale.current.identifier,
             Key.maxConcurrentModelCalls: 1,
             Key.maxConcurrentUtterances: 2,
-            Key.outputSafetyFactor: 1.15,
             Key.launchAtLogin: false,
             Key.showNotifications: true,
             Key.enableDebugLogging: false,
@@ -96,7 +90,6 @@ final class SettingsStore: ObservableObject {
         self.defaultLanguageIdentifier = defaults.string(forKey: Key.defaultLanguageIdentifier) ?? Locale.current.identifier
         self.maxConcurrentModelCalls = defaults.integer(forKey: Key.maxConcurrentModelCalls)
         self.maxConcurrentUtterances = defaults.integer(forKey: Key.maxConcurrentUtterances)
-        self.outputSafetyFactor = defaults.double(forKey: Key.outputSafetyFactor)
         self.launchAtLogin = defaults.bool(forKey: Key.launchAtLogin)
         self.showNotifications = defaults.bool(forKey: Key.showNotifications)
         self.enableDebugLogging = defaults.bool(forKey: Key.enableDebugLogging)

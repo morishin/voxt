@@ -220,14 +220,6 @@ struct FormattingSettingsView: View {
                     Text(mode.displayName).tag(mode)
                 }
             }
-            LabeledContent("Output safety factor") {
-                HStack {
-                    Slider(value: $settings.outputSafetyFactor, in: 1.0...1.5, step: 0.05)
-                    Text(String(format: "%.2f", settings.outputSafetyFactor))
-                        .monospacedDigit()
-                        .frame(width: 48, alignment: .trailing)
-                }
-            }
         }
         .formStyle(.grouped)
         .padding()

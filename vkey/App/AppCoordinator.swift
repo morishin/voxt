@@ -208,7 +208,7 @@ final class AppCoordinator: ObservableObject {
         await MainActor.run {
             let modelAvailable = SystemLanguageModel.default.isAvailable
             let mode = modelAvailable ? settings.formattingMode : .raw
-            return ProcessingConfig(formattingMode: mode, outputSafetyFactor: settings.outputSafetyFactor)
+            return ProcessingConfig(formattingMode: mode)
         }
     }
 }

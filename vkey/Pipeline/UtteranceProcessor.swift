@@ -12,7 +12,8 @@ import OSLog
 /// 発話処理時の設定スナップショット（処理中に設定が変わっても一貫させる）。
 struct ProcessingConfig: Sendable {
     let formattingMode: FormattingMode
-    let outputSafetyFactor: Double
+    /// 整文で「出力 ≈ 入力」を見込むチャンク計算の安全係数（内部定数）。
+    var outputSafetyFactor: Double = 1.15
 }
 
 struct UtteranceProcessor: Sendable {
