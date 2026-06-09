@@ -21,11 +21,22 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private let languages: LanguageManager
     private let coordinator: AppCoordinator
 
+    private enum AnimationMode {
+        case none
+        case pulse  // 録音中: 明滅
+        case spin   // 処理中: 回転スピナー
+    }
+
     private var cancellables: Set<AnyCancellable> = []
     private var animationTimer: Timer?
     private var phase: Double = 0
+    private var mode: AnimationMode = .none
     private let frameInterval: TimeInterval = 1.0 / 20.0
-    private let period: TimeInterval = 1.6
+    private let pulsePeriod: TimeInterval = 1.6   // 明滅 1 周期
+    private let spinPeriod: TimeInterval = 1.0    // 回転 1 周期
+
+    /// 処理中スピナーの元画像（回転して使う）。
+    private lazy var spinnerBaseImage: NSImage? = Self.symbolImage("arrow.triangle.2.circlepath")
 
     init(status: PipelineStatusStore,
          settings: SettingsStore,
@@ -58,30 +69,39 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     }
 
     private func applyState(_ state: PipelineStatusStore.UIState) {
-        updateBaseImage(for: state)
-        if state == .ready {
+        switch state {
+        case .ready:
+            mode = .none
+            setImage("mic")
             stopAnimation()
-        } else {
+        case .recording:
+            mode = .pulse
+            setImage("mic.fill")
+            startAnimation()
+        case .processing:
+            mode = .spin
+            // 画像は tick で回転して差し替える。初期フレームを置いておく。
+            statusItem.button?.image = spinnerBaseImage
+            statusItem.button?.alphaValue = 1.0
             startAnimation()
         }
     }
 
-    private func updateBaseImage(for state: PipelineStatusStore.UIState) {
-        let name: String
-        switch state {
-        case .ready: name = "mic"
-        case .recording: name = "mic.fill"
-        case .processing: name = "waveform"
-        }
-        let image = NSImage(systemSymbolName: name, accessibilityDescription: "vkey")
-        image?.isTemplate = true
-        statusItem.button?.image = image
-        if state == .ready {
-            statusItem.button?.alphaValue = 1.0
-        }
+    private func setImage(_ symbolName: String) {
+        statusItem.button?.image = Self.symbolImage(symbolName)
+        statusItem.button?.alphaValue = 1.0
     }
 
-    // MARK: - Animation（button.alphaValue を Timer で滑らかに明滅）
+    /// SF Symbol をメニューバー向けに構成したテンプレート画像にする。
+    private static func symbolImage(_ name: String) -> NSImage? {
+        let config = NSImage.SymbolConfiguration(pointSize: 15, weight: .regular)
+        let image = NSImage(systemSymbolName: name, accessibilityDescription: "vkey")?
+            .withSymbolConfiguration(config)
+        image?.isTemplate = true
+        return image
+    }
+
+    // MARK: - Animation（Timer で明滅 or 回転）
 
     private func startAnimation() {
         guard animationTimer == nil else { return }
@@ -101,8 +121,35 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     private func tick() {
         phase += frameInterval
-        let pulse = (sin(phase * 2 * .pi / period) + 1) / 2
-        statusItem.button?.alphaValue = 0.3 + 0.7 * pulse
+        switch mode {
+        case .pulse:
+            let pulse = (sin(phase * 2 * .pi / pulsePeriod) + 1) / 2
+            statusItem.button?.alphaValue = 0.3 + 0.7 * pulse
+        case .spin:
+            // 時計回りに回転。
+            let angle = -2 * .pi * (phase.truncatingRemainder(dividingBy: spinPeriod) / spinPeriod)
+            if let base = spinnerBaseImage {
+                statusItem.button?.image = Self.rotated(base, by: CGFloat(angle))
+            }
+        case .none:
+            break
+        }
+    }
+
+    /// NSImage を中心まわりに回転した新しいテンプレート画像を返す。
+    private static func rotated(_ base: NSImage, by radians: CGFloat) -> NSImage {
+        let size = base.size
+        let image = NSImage(size: size)
+        image.lockFocus()
+        if let ctx = NSGraphicsContext.current?.cgContext {
+            ctx.translateBy(x: size.width / 2, y: size.height / 2)
+            ctx.rotate(by: radians)
+            ctx.translateBy(x: -size.width / 2, y: -size.height / 2)
+        }
+        base.draw(in: NSRect(origin: .zero, size: size))
+        image.unlockFocus()
+        image.isTemplate = true
+        return image
     }
 
     // MARK: - Menu (開く度に動的に再構築)
