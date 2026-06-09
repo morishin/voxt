@@ -44,10 +44,12 @@ struct UtteranceProcessor: Sendable {
 
         // --- Stage 2: チャンク分割 ---
         let instructions = FormattingPromptFactory.instructions(mode: config.formattingMode, locale: u.locale)
-        let instructionTokens = Chunker.estimateTokens(instructions)
+        // 指示文 + プロンプト包装(区切り記号・言語指定)の固定トークンを差し引く。
+        let fixedTokens = Chunker.estimateTokens(instructions)
+            + Chunker.estimateTokens(FormattingPromptFactory.prompt(for: "", locale: u.locale))
         let chunks = chunker.split(transcript: transcript,
                                    locale: u.locale,
-                                   instructionTokens: instructionTokens,
+                                   instructionTokens: fixedTokens,
                                    outputSafetyFactor: config.outputSafetyFactor)
 
         // --- Stage 3: TaskGroup で並列整形し、index 位置へ書き戻して順序復元 ---

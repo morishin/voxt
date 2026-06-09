@@ -38,7 +38,8 @@ struct ChunkFormatter: Sendable {
                             outputSafetyFactor: Double) async throws -> FormattedChunk {
         let session = LanguageModelSession(instructions: instructions)
         do {
-            let response = try await session.respond(to: chunkText)
+            let prompt = FormattingPromptFactory.prompt(for: chunkText, locale: locale)
+            let response = try await session.respond(to: prompt)
             return FormattedChunk(index: index, text: response.content)
         } catch let error as LanguageModelSession.GenerationError {
             if case .exceededContextWindowSize = error {
@@ -61,11 +62,13 @@ struct ChunkFormatter: Sendable {
                                          locale: Locale,
                                          chunker: Chunker,
                                          outputSafetyFactor: Double) async throws -> FormattedChunk {
-        let instrTokens = Chunker.estimateTokens(instructions)
+        // 指示文 + プロンプト包装分の固定トークンを差し引いて分割する。
+        let fixedTokens = Chunker.estimateTokens(instructions)
+            + Chunker.estimateTokens(FormattingPromptFactory.prompt(for: "", locale: locale))
         // safety を増やしてより小さく分割する。
         let sub = chunker.split(transcript: chunkText,
                                 locale: locale,
-                                instructionTokens: instrTokens,
+                                instructionTokens: fixedTokens,
                                 outputSafetyFactor: outputSafetyFactor + 0.5)
         guard sub.count > 1 else { throw ProcessingError.contextWindowExceeded }
 
@@ -73,7 +76,7 @@ struct ChunkFormatter: Sendable {
         var joined = ""
         for piece in sub {
             let session = LanguageModelSession(instructions: instructions)
-            let response = try await session.respond(to: piece)
+            let response = try await session.respond(to: FormattingPromptFactory.prompt(for: piece, locale: locale))
             joined += response.content
         }
         return FormattedChunk(index: index, text: joined)
