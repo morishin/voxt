@@ -14,10 +14,10 @@ struct SettingsView: View {
     var body: some View {
         TabView(selection: $navigation.selectedTab) {
             GeneralSettingsView()
-                .tabItem { Label("一般", systemImage: "gearshape") }
+                .tabItem { Text("一般") }
                 .tag(SettingsTab.general)
             LanguageSettingsView()
-                .tabItem { Label("言語", systemImage: "globe") }
+                .tabItem { Text("言語") }
                 .tag(SettingsTab.language)
         }
         .frame(width: 460, height: 460)
@@ -33,11 +33,28 @@ struct GeneralSettingsView: View {
     @State private var isRecordingHotkey = false
     @State private var eventMonitor: Any?
 
+    private var missingPermissions: [PermissionKind] {
+        PermissionKind.allCases.filter { permissions.state(for: $0) != .granted }
+    }
+
     var body: some View {
         Form {
+            // 権限が揃っていない時だけ、一番上に目立つ形で要許可の権限を表示する。
+            if !permissions.allGranted {
+                Section {
+                    ForEach(missingPermissions) { kind in
+                        PermissionRow(kind: kind, state: permissions.state(for: kind))
+                    }
+                    Button("再チェック") { permissions.refresh() }
+                } header: {
+                    Label("vkey を使うには権限の許可が必要です", systemImage: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                        .font(.headline)
+                }
+            }
+
             Section("一般") {
                 Toggle("ログイン時に起動", isOn: $settings.launchAtLogin)
-                Toggle("通知を表示", isOn: $settings.showNotifications)
             }
 
             Section("ホットキー") {
@@ -57,24 +74,38 @@ struct GeneralSettingsView: View {
                         Text(mode.displayName).tag(mode)
                     }
                 }
+                Text(settings.formattingMode.explanation)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
-            Section("挿入") {
-                Picker("挿入方式", selection: $settings.insertionMode) {
-                    ForEach(InsertionMode.allCases) { mode in
-                        Text(mode.displayName).tag(mode)
+            // Off 以外のときだけ、追加のカスタム整形指示を書けるようにする。
+            if settings.formattingMode != .raw {
+                Section {
+                    TextField(
+                        "カスタム整形指示",
+                        text: $settings.customFormattingInstruction,
+                        prompt: Text("例: だ・である調に統一する / 箇条書きは行頭に「・」を付ける"),
+                        axis: .vertical
+                    )
+                    .textFieldStyle(.roundedBorder)
+                    .labelsHidden()
+                    .lineLimit(3, reservesSpace: true)
+
+                    HStack {
+                        Text("整形時に追加で守ってほしいルールを書けます（翻訳・要約はされません）。")
+                        Spacer()
+                        Text("\(settings.customFormattingInstruction.count)/\(SettingsStore.maxCustomInstructionLength)")
+                            .monospacedDigit()
                     }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                } header: {
+                    Text("カスタム整形指示（任意）")
                 }
             }
 
-            Section {
-                ForEach(PermissionKind.allCases) { kind in
-                    PermissionRow(kind: kind, state: permissions.state(for: kind))
-                }
-                Button("再チェック") { permissions.refresh() }
-            } header: {
-                Text("権限")
-            }
         }
         .formStyle(.grouped)
         .padding()
@@ -158,13 +189,23 @@ struct LanguageSettingsView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            List(languages.options) { option in
+            List(sortedOptions) { option in
                 LanguageRow(option: option)
             }
             .frame(maxHeight: .infinity)
         }
         .padding()
         .task { if languages.options.isEmpty { await languages.refresh() } }
+    }
+
+    /// 選択中（デフォルト）の言語を先頭に、残りは名前順に並べる。
+    private var sortedOptions: [LanguageManager.LanguageOption] {
+        languages.options.sorted { a, b in
+            let aSel = LanguageManager.matches(a, settingIdentifier: settings.defaultLanguageIdentifier)
+            let bSel = LanguageManager.matches(b, settingIdentifier: settings.defaultLanguageIdentifier)
+            if aSel != bSel { return aSel }
+            return a.displayName.localizedCompare(b.displayName) == .orderedAscending
+        }
     }
 }
 
@@ -188,9 +229,11 @@ private struct LanguageRow: View {
                 .foregroundStyle(option.isInstalled ? .primary : .secondary)
             Spacer()
             if option.isInstalled {
-                Label("DL済み", systemImage: "checkmark.circle.fill")
-                    .labelStyle(.iconOnly)
-                    .foregroundStyle(.green)
+                // OS 管理（システム言語など）はアプリから削除できないのでボタンを出さない。
+                if option.isRemovable {
+                    Button("削除") { delete() }
+                        .buttonStyle(.borderless)
+                }
             } else if isDownloading {
                 HStack(spacing: 6) {
                     ProgressView().controlSize(.small)
@@ -210,6 +253,22 @@ private struct LanguageRow: View {
             // ダウンロード済みのみ選択可能。
             guard option.isInstalled else { return }
             settings.defaultLanguageIdentifier = option.locale.identifier
+        }
+    }
+
+    private func delete() {
+        let wasSelected = isSelected
+        Task {
+            await languages.remove(option.locale)
+            guard wasSelected else { return }
+            // 選択中の言語を削除したら、常に利用可能なシステム言語へ戻す。
+            // システム言語が無ければ残りのインストール済み言語の先頭へ。
+            let systemId = Locale.current.identifier
+            if languages.installedOptions.contains(where: { LanguageManager.matches($0, settingIdentifier: systemId) }) {
+                settings.defaultLanguageIdentifier = systemId
+            } else if let fallback = languages.installedOptions.first {
+                settings.defaultLanguageIdentifier = fallback.locale.identifier
+            }
         }
     }
 }

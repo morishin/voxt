@@ -135,6 +135,8 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
         menu.addItem(.separator())
 
+        // 歯車アイコンは macOS が「設定」項目に自動付与するもので消せないため、
+        // 標準どおり ⌘, ショートカットを付けたままにする。
         let settingsItem = NSMenuItem(title: "Settings…", action: #selector(openSettings), keyEquivalent: ",")
         settingsItem.target = self
         menu.addItem(settingsItem)

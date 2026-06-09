@@ -24,4 +24,16 @@ enum FormattingMode: String, CaseIterable, Identifiable, Codable, Sendable {
         case .standard: return "Standard (標準整形)"
         }
     }
+
+    /// 設定画面で選択中モードの違いを示す説明（before → after の例つき）。
+    var explanation: String {
+        switch self {
+        case .raw:
+            return "整形しません。文字起こし結果をそのまま挿入します。"
+        case .light:
+            return "フィラー除去と句読点の補完など、最小限の整形をします。\n例: 「えーと、明日は10時集合で」→「明日は10時集合で。」"
+        case .standard:
+            return "自然な書き言葉へ整えます。言い淀みや語順も調整されます。\n例: 「えーと明日って10時集合だっけ」→「明日は10時集合でしたか？」"
+        }
+    }
 }

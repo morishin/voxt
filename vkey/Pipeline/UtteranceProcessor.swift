@@ -12,6 +12,8 @@ import OSLog
 /// 発話処理時の設定スナップショット（処理中に設定が変わっても一貫させる）。
 struct ProcessingConfig: Sendable {
     let formattingMode: FormattingMode
+    /// ユーザーが設定したカスタム整形指示（任意・空文字なら無効）。
+    var customInstruction: String = ""
     /// 整文で「出力 ≈ 入力」を見込むチャンク計算の安全係数（内部定数）。
     var outputSafetyFactor: Double = 1.15
 }
@@ -44,7 +46,7 @@ struct UtteranceProcessor: Sendable {
         }
 
         // --- Stage 2: チャンク分割 ---
-        let instructions = FormattingPromptFactory.instructions(mode: config.formattingMode, locale: u.locale)
+        let instructions = FormattingPromptFactory.instructions(mode: config.formattingMode, locale: u.locale, custom: config.customInstruction)
         // 指示文 + プロンプト包装(区切り記号・言語指定)の固定トークンを差し引く。
         let fixedTokens = Chunker.estimateTokens(instructions)
             + Chunker.estimateTokens(FormattingPromptFactory.prompt(for: "", locale: u.locale))

@@ -20,7 +20,6 @@ final class AppCoordinator: ObservableObject {
     let status: PipelineStatusStore
     let permissions: PermissionManager
     let languages = LanguageManager()
-    let notifier = Notifier()
 
     private let hotkey: HotkeyMonitor
     private let capture = AudioCaptureService()
@@ -55,7 +54,6 @@ final class AppCoordinator: ObservableObject {
         startPipeline()
         Task {
             await languages.refresh()
-            if settings.showNotifications { await notifier.requestAuthorization() }
         }
     }
 
@@ -165,7 +163,6 @@ final class AppCoordinator: ObservableObject {
         let maxModelCalls = settings.maxConcurrentModelCalls
         let maxUtterances = settings.maxConcurrentUtterances
         let status = self.status
-        let notifier = self.notifier
 
         pipelineTask = Task { [utteranceStream, transcriber, settings] in
             // 処理スタックを 1 度だけ構築する（GlobalModelLimiter は全発話で共有）。
@@ -178,18 +175,12 @@ final class AppCoordinator: ObservableObject {
             let inserter = TextInserter()
             let serializer = InsertionSerializer(
                 inserter: inserter,
-                modeProvider: { await MainActor.run { settings.insertionMode } },
+                modeProvider: { .auto }, // 挿入方式は常に auto（直接挿入 → 失敗時ペースト）。
                 onInserted: { seq, outcome, text in
                     await status.inserted(seq: seq.raw, text: text.isEmpty ? nil : text)
-                    let showNotif = await MainActor.run { settings.showNotifications }
-                    guard showNotif else { return }
-                    switch outcome {
-                    case .pasted:
-                        await notifier.notify(title: "vkey", body: "直接挿入できなかったため、クリップボード経由で貼り付けました。")
-                    case .failed:
-                        await notifier.notify(title: "vkey", body: "テキストを挿入できませんでした。内容はクリップボードに保存しました。")
-                    case .directInserted, .none:
-                        break
+                    // 挿入に完全失敗した時だけアラートで知らせる（pasted は成功なので無通知）。
+                    if case .failed = outcome {
+                        await MainActor.run { Self.showInsertionFailedAlert() }
                     }
                 }
             )
@@ -208,7 +199,19 @@ final class AppCoordinator: ObservableObject {
         await MainActor.run {
             let modelAvailable = SystemLanguageModel.default.isAvailable
             let mode = modelAvailable ? settings.formattingMode : .raw
-            return ProcessingConfig(formattingMode: mode)
+            return ProcessingConfig(formattingMode: mode, customInstruction: settings.customFormattingInstruction)
         }
+    }
+
+    /// テキスト挿入に完全失敗した時に表示する警告アラート。
+    @MainActor
+    private static func showInsertionFailedAlert() {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "テキストを挿入できませんでした"
+        alert.informativeText = "内容はクリップボードに保存しました。貼り付けたい場所を選んで ⌘V で貼り付けてください。"
+        alert.addButton(withTitle: "OK")
+        NSApp.activate(ignoringOtherApps: true)
+        alert.runModal()
     }
 }

@@ -45,11 +45,16 @@ final class SettingsWindowController {
             window.title = "vkey 設定"
             window.styleMask = [.titled, .closable]
             window.isReleasedWhenClosed = false
+            // 別 Space で開いても現在の Space に出すようにする。
+            window.collectionBehavior = [.moveToActiveSpace]
             window.center()
             self.window = window
         }
 
+        // accessory アプリでは activate だけだと他アプリの裏に回ることがあるため、
+        // orderFrontRegardless で確実に最前面へ出す。
         NSApp.activate(ignoringOtherApps: true)
         window?.makeKeyAndOrderFront(nil)
+        window?.orderFrontRegardless()
     }
 }

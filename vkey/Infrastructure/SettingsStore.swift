@@ -14,12 +14,11 @@ final class SettingsStore: ObservableObject {
 
     private enum Key {
         static let formattingMode = "formattingMode"
-        static let insertionMode = "insertionMode"
+        static let customFormattingInstruction = "customFormattingInstruction"
         static let defaultLanguageIdentifier = "defaultLanguageIdentifier"
         static let maxConcurrentModelCalls = "maxConcurrentModelCalls"
         static let maxConcurrentUtterances = "maxConcurrentUtterances"
         static let launchAtLogin = "launchAtLogin"
-        static let showNotifications = "showNotifications"
         static let enableDebugLogging = "enableDebugLogging"
         static let hotKeyKeyCode = "hotKeyKeyCode"
     }
@@ -42,10 +41,18 @@ final class SettingsStore: ObservableObject {
     @Published var formattingMode: FormattingMode {
         didSet { defaults.set(formattingMode.rawValue, forKey: Key.formattingMode) }
     }
-
-    // MARK: - Insertion
-    @Published var insertionMode: InsertionMode {
-        didSet { defaults.set(insertionMode.rawValue, forKey: Key.insertionMode) }
+    /// カスタム整形指示の最大文字数（トークン上限を圧迫しないため）。
+    static let maxCustomInstructionLength = 200
+    /// ユーザーが書く追加の整形指示。空なら無効。最大長で切り詰める。
+    @Published var customFormattingInstruction: String {
+        didSet {
+            let capped = String(customFormattingInstruction.prefix(Self.maxCustomInstructionLength))
+            if capped != customFormattingInstruction {
+                customFormattingInstruction = capped
+                return
+            }
+            defaults.set(customFormattingInstruction, forKey: Key.customFormattingInstruction)
+        }
     }
 
     // MARK: - Concurrency（並列度 2 ノブ。実測で調整する）
@@ -62,9 +69,6 @@ final class SettingsStore: ObservableObject {
     @Published var launchAtLogin: Bool {
         didSet { defaults.set(launchAtLogin, forKey: Key.launchAtLogin) }
     }
-    @Published var showNotifications: Bool {
-        didSet { defaults.set(showNotifications, forKey: Key.showNotifications) }
-    }
     @Published var enableDebugLogging: Bool {
         didSet { defaults.set(enableDebugLogging, forKey: Key.enableDebugLogging) }
     }
@@ -75,23 +79,21 @@ final class SettingsStore: ObservableObject {
         // 既定値の登録
         defaults.register(defaults: [
             Key.formattingMode: FormattingMode.light.rawValue,
-            Key.insertionMode: InsertionMode.auto.rawValue,
+            Key.customFormattingInstruction: "",
             Key.defaultLanguageIdentifier: Locale.current.identifier,
             Key.maxConcurrentModelCalls: 1,
             Key.maxConcurrentUtterances: 2,
             Key.launchAtLogin: false,
-            Key.showNotifications: true,
             Key.enableDebugLogging: false,
             Key.hotKeyKeyCode: 0x36, // Right Command
         ])
 
         self.formattingMode = FormattingMode(rawValue: defaults.string(forKey: Key.formattingMode) ?? "") ?? .light
-        self.insertionMode = InsertionMode(rawValue: defaults.string(forKey: Key.insertionMode) ?? "") ?? .auto
+        self.customFormattingInstruction = defaults.string(forKey: Key.customFormattingInstruction) ?? ""
         self.defaultLanguageIdentifier = defaults.string(forKey: Key.defaultLanguageIdentifier) ?? Locale.current.identifier
         self.maxConcurrentModelCalls = defaults.integer(forKey: Key.maxConcurrentModelCalls)
         self.maxConcurrentUtterances = defaults.integer(forKey: Key.maxConcurrentUtterances)
         self.launchAtLogin = defaults.bool(forKey: Key.launchAtLogin)
-        self.showNotifications = defaults.bool(forKey: Key.showNotifications)
         self.enableDebugLogging = defaults.bool(forKey: Key.enableDebugLogging)
         self.hotKeyKeyCode = defaults.integer(forKey: Key.hotKeyKeyCode)
     }
