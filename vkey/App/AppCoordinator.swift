@@ -122,10 +122,15 @@ final class AppCoordinator: ObservableObject {
 
     // MARK: - Recording
 
+    /// この秒数未満の録音は誤タップとみなして破棄する。
+    private let minRecordingSeconds: TimeInterval = 0.3
+    private var recordingStartedAt: Date?
+
     private func startRecording() {
         guard !capture.recording else { return }
         do {
             _ = try capture.start(maxSeconds: settings.maxRecordingSeconds)
+            recordingStartedAt = Date()
             status.recordingStarted()
         } catch {
             status.reportError("録音開始に失敗しました: \(error)")
@@ -134,8 +139,18 @@ final class AppCoordinator: ObservableObject {
 
     private func stopRecordingAndSubmit() {
         let url = capture.stop()
+        let elapsed = recordingStartedAt.map { Date().timeIntervalSince($0) } ?? .infinity
+        recordingStartedAt = nil
         status.recordingStopped()
         guard let url else { return }
+
+        // 短すぎる録音（誤タップ）は破棄し、無駄な文字起こし・処理フラッシュを避ける。
+        if elapsed < minRecordingSeconds {
+            Log.capture.info("discarding too-short recording (\(elapsed, format: .fixed(precision: 2))s)")
+            try? FileManager.default.removeItem(at: url)
+            return
+        }
+
         let locale = Locale(identifier: settings.defaultLanguageIdentifier)
         intake.submit(audioURL: url, locale: locale)
         // 採番した発話をキュー残数に反映する（挿入完了で減算される）。

@@ -35,10 +35,14 @@ final class PipelineStatusStore: ObservableObject {
     @Published private(set) var lastResultText: String?
     /// Foundation Models（Apple Intelligence）が利用可能か。
     @Published var modelAvailable = true
+    /// 点滅アニメーション用フラグ。録音中/処理中に Timer で反転する。
+    /// MenuBarExtra のラベルは symbolEffect が効かないため、状態差し替えで点滅させる。
+    @Published private(set) var blinkOn = true
 
     private var enqueuedCount = 0
     private var insertedCount = 0
     private var isRecording = false
+    private var blinkTimer: Timer?
 
     // MARK: - Recording
 
@@ -84,6 +88,25 @@ final class PipelineStatusStore: ObservableObject {
             state = .processing(queued: queued)
         } else {
             state = .ready
+        }
+        updateBlink()
+    }
+
+    /// 録音中/処理中のみ点滅 Timer を回す。Ready では停止して点灯状態に戻す。
+    private func updateBlink() {
+        let animating = state != .ready
+        if animating {
+            if blinkTimer == nil {
+                let timer = Timer(timeInterval: 0.5, repeats: true) { [weak self] _ in
+                    MainActor.assumeIsolated { self?.blinkOn.toggle() }
+                }
+                RunLoop.main.add(timer, forMode: .common)
+                blinkTimer = timer
+            }
+        } else {
+            blinkTimer?.invalidate()
+            blinkTimer = nil
+            if !blinkOn { blinkOn = true }
         }
     }
 }

@@ -37,6 +37,6 @@ private struct MenuBarLabel: View {
     @ObservedObject var status: PipelineStatusStore
 
     var body: some View {
-        StatusIcon(state: status.state)
+        StatusIcon(state: status.state, blinkOn: status.blinkOn)
     }
 }

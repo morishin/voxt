@@ -3,13 +3,15 @@
 //  vkey
 //
 //  メニューバーに表示する状態アイコン。
-//  録音中はパルス点滅、処理中は波形を可変カラーでアニメーションさせる。
+//  MenuBarExtra のラベルは symbolEffect が効かないため、blinkOn の反転で点滅させる。
 //
 
 import SwiftUI
 
 struct StatusIcon: View {
     let state: PipelineStatusStore.UIState
+    /// 点滅フラグ（PipelineStatusStore が Timer で反転）。
+    var blinkOn: Bool = true
 
     var body: some View {
         switch state {
@@ -17,15 +19,14 @@ struct StatusIcon: View {
             Image(systemName: "mic")
                 .symbolRenderingMode(.hierarchical)
         case .recording:
-            // 録音中: パルス点滅（繰り返し）。
-            Image(systemName: "mic.fill")
+            // 録音中: 塗り↔輪郭でハッキリ点滅。
+            Image(systemName: blinkOn ? "mic.fill" : "mic")
                 .symbolRenderingMode(.hierarchical)
-                .symbolEffect(.pulse, options: .repeating)
         case .processing:
-            // 処理中: 波形を順番に光らせて「動いている」感を出す。
+            // 処理中: 波形を薄く↔濃く点滅。
             Image(systemName: "waveform")
                 .symbolRenderingMode(.hierarchical)
-                .symbolEffect(.variableColor.iterative.hideInactiveLayers, options: .repeating)
+                .opacity(blinkOn ? 1.0 : 0.4)
         }
     }
 }
