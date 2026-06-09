@@ -34,10 +34,12 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private var mode: AnimationMode = .none
     private let frameInterval: TimeInterval = 1.0 / 20.0
     private let pulsePeriod: TimeInterval = 1.6   // 明滅 1 周期
-    private let spinPeriod: TimeInterval = 1.0    // 回転 1 周期
 
-    /// 処理中スピナーの元画像（回転して使う）。
-    private lazy var spinnerBaseImage: NSImage? = Self.symbolImage("arrow.triangle.2.circlepath")
+    /// 処理中スピナーの回転フレーム。起動時に 1 度だけ事前生成してキャッシュし、
+    /// 再生時はキャッシュ画像を差し替えるだけにする（毎フレーム描画しない）。
+    private let spinFrameCount = 20  // 20fps で 1 周 1 秒
+    private lazy var spinnerFrames: [NSImage] = Self.makeRotationFrames("progress.indicator", count: spinFrameCount)
+    private var spinIndex = 0
 
     init(status: PipelineStatusStore,
          settings: SettingsStore,
@@ -83,9 +85,9 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             startAnimation()
         case .processing:
             mode = .spin
-            // 画像は tick で回転して差し替える。初期フレームを置いておく。
-            statusItem.button?.image = spinnerBaseImage
+            spinIndex = 0
             statusItem.button?.alphaValue = 1.0
+            statusItem.button?.image = spinnerFrames.first ?? Self.symbolImage("progress.indicator")
             startAnimation()
         }
     }
@@ -123,19 +125,27 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     }
 
     private func tick() {
-        phase += frameInterval
         switch mode {
         case .pulse:
+            phase += frameInterval
             let pulse = (sin(phase * 2 * .pi / pulsePeriod) + 1) / 2
             statusItem.button?.alphaValue = 0.3 + 0.7 * pulse
         case .spin:
-            // 時計回りに回転。
-            let angle = -2 * .pi * (phase.truncatingRemainder(dividingBy: spinPeriod) / spinPeriod)
-            if let base = spinnerBaseImage {
-                statusItem.button?.image = Self.rotated(base, by: CGFloat(angle))
-            }
+            // 事前生成済みフレームを差し替えるだけ（描画コストゼロ）。
+            guard !spinnerFrames.isEmpty else { return }
+            spinIndex = (spinIndex + 1) % spinnerFrames.count
+            statusItem.button?.image = spinnerFrames[spinIndex]
         case .none:
             break
+        }
+    }
+
+    /// 回転フレームを事前生成する（時計回り、count 枚で 1 周）。
+    private static func makeRotationFrames(_ symbolName: String, count: Int) -> [NSImage] {
+        guard let base = symbolImage(symbolName) else { return [] }
+        return (0..<count).map { i in
+            let angle = -2 * CGFloat.pi * CGFloat(i) / CGFloat(count)
+            return rotated(base, by: angle)
         }
     }
 
