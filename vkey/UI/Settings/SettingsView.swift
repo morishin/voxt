@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AppKit
 
 struct SettingsView: View {
     @EnvironmentObject private var navigation: SettingsNavigation
@@ -57,9 +58,8 @@ struct GeneralSettingsView: View {
 
 struct RecordingSettingsView: View {
     @EnvironmentObject private var settings: SettingsStore
-
-    /// 競合が少なく PTT に向く修飾キー候補。
-    static let selectableHotkeys: [Int] = [0x36, 0x37, 0x3D, 0x3A, 0x3F] // R-Cmd, L-Cmd, R-Opt, L-Opt, Fn
+    @State private var isRecordingHotkey = false
+    @State private var eventMonitor: Any?
 
     var body: some View {
         Form {
@@ -71,15 +71,71 @@ struct RecordingSettingsView: View {
                         .frame(width: 48, alignment: .trailing)
                 }
             }
-            // 主要な修飾キーから選択する。任意キーへの対応は将来拡張。
-            Picker("Push-to-talk key", selection: $settings.hotKeyKeyCode) {
-                ForEach(Self.selectableHotkeys, id: \.self) { code in
-                    Text(HotkeyMonitor.displayName(for: CGKeyCode(code))).tag(code)
+            LabeledContent("Push-to-talk key") {
+                Button(action: toggleHotkeyRecording) {
+                    Text(hotkeyButtonTitle)
+                        .frame(minWidth: 150)
                 }
             }
+            Text("ボタンを押してから、ホットキーにしたいキーを 1 つ押してください（Esc でキャンセル）。押している間だけ録音されるので、Right Command などの修飾キーや F キーが向いています。")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
         .formStyle(.grouped)
         .padding()
+        .onDisappear { stopHotkeyRecording() }
+    }
+
+    private var hotkeyButtonTitle: String {
+        isRecordingHotkey
+            ? "キーを押してください…"
+            : HotkeyMonitor.displayName(for: CGKeyCode(settings.hotKeyKeyCode))
+    }
+
+    private func toggleHotkeyRecording() {
+        isRecordingHotkey ? stopHotkeyRecording() : startHotkeyRecording()
+    }
+
+    private func startHotkeyRecording() {
+        isRecordingHotkey = true
+        eventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .flagsChanged]) { event in
+            handleHotkeyEvent(event)
+            return nil // イベントを消費し、他のコントロールへ渡さない。
+        }
+    }
+
+    private func stopHotkeyRecording() {
+        if let eventMonitor { NSEvent.removeMonitor(eventMonitor) }
+        eventMonitor = nil
+        isRecordingHotkey = false
+    }
+
+    private func handleHotkeyEvent(_ event: NSEvent) {
+        switch event.type {
+        case .keyDown:
+            if event.keyCode == 53 { stopHotkeyRecording(); return } // Esc でキャンセル
+            settings.hotKeyKeyCode = Int(event.keyCode)
+            stopHotkeyRecording()
+        case .flagsChanged:
+            // 修飾キーが「押された」瞬間のみ捕捉する（離した瞬間は無視）。
+            let code = CGKeyCode(event.keyCode)
+            guard let flag = Self.modifierFlag(for: code), event.modifierFlags.contains(flag) else { return }
+            settings.hotKeyKeyCode = Int(code)
+            stopHotkeyRecording()
+        default:
+            break
+        }
+    }
+
+    private static func modifierFlag(for keyCode: CGKeyCode) -> NSEvent.ModifierFlags? {
+        switch keyCode {
+        case 0x36, 0x37: return .command
+        case 0x38, 0x3C: return .shift
+        case 0x3A, 0x3D: return .option
+        case 0x3B, 0x3E: return .control
+        case 0x3F: return .function
+        default: return nil
+        }
     }
 }
 

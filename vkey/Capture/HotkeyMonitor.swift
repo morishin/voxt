@@ -144,6 +144,7 @@ final class HotkeyMonitor {
     /// keyCode を人間可読な名前に。
     static func displayName(for keyCode: CGKeyCode) -> String {
         switch keyCode {
+        // 修飾キー
         case 0x37: return "Left Command"
         case 0x36: return "Right Command"
         case 0x38: return "Left Shift"
@@ -153,7 +154,45 @@ final class HotkeyMonitor {
         case 0x3B: return "Left Control"
         case 0x3E: return "Right Control"
         case 0x3F: return "Fn"
-        default: return "Key 0x\(String(keyCode, radix: 16))"
+        // 特殊キー
+        case 0x31: return "Space"
+        case 0x24: return "Return"
+        case 0x30: return "Tab"
+        case 0x35: return "Escape"
+        case 0x33: return "Delete"
+        case 0x39: return "Caps Lock"
+        // ファンクションキー
+        case 0x7A: return "F1"
+        case 0x78: return "F2"
+        case 0x63: return "F3"
+        case 0x76: return "F4"
+        case 0x60: return "F5"
+        case 0x61: return "F6"
+        case 0x62: return "F7"
+        case 0x64: return "F8"
+        case 0x65: return "F9"
+        case 0x6D: return "F10"
+        case 0x67: return "F11"
+        case 0x6F: return "F12"
+        default:
+            if let name = ansiKeyName(for: keyCode) { return name }
+            return "Key 0x\(String(keyCode, radix: 16))"
         }
+    }
+
+    /// ANSI 配列の英字・数字・記号キーの名前。
+    private static func ansiKeyName(for keyCode: CGKeyCode) -> String? {
+        let map: [CGKeyCode: String] = [
+            0x00: "A", 0x0B: "B", 0x08: "C", 0x02: "D", 0x0E: "E", 0x03: "F",
+            0x05: "G", 0x04: "H", 0x22: "I", 0x26: "J", 0x28: "K", 0x25: "L",
+            0x2E: "M", 0x2D: "N", 0x1F: "O", 0x23: "P", 0x0C: "Q", 0x0F: "R",
+            0x01: "S", 0x11: "T", 0x20: "U", 0x09: "V", 0x0D: "W", 0x07: "X",
+            0x10: "Y", 0x06: "Z",
+            0x1D: "0", 0x12: "1", 0x13: "2", 0x14: "3", 0x15: "4",
+            0x17: "5", 0x16: "6", 0x1A: "7", 0x1C: "8", 0x19: "9",
+            0x18: "=", 0x1B: "-", 0x21: "[", 0x1E: "]", 0x29: ";",
+            0x27: "'", 0x2B: ",", 0x2F: ".", 0x2C: "/", 0x2A: "\\", 0x32: "`",
+        ]
+        return map[keyCode]
     }
 }
