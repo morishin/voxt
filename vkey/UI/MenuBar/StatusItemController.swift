@@ -82,7 +82,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     /// SF Symbol をメニューバー向けに構成したテンプレート画像にする。
     private static func symbolImage(_ name: String) -> NSImage? {
         let config = NSImage.SymbolConfiguration(pointSize: 15, weight: .regular)
-        let image = NSImage(systemSymbolName: name, accessibilityDescription: "vkey")?
+        let image = NSImage(systemSymbolName: name, accessibilityDescription: "Voxt")?
             .withSymbolConfiguration(config)
         image?.isTemplate = true
         return image
@@ -141,7 +141,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         settingsItem.target = self
         menu.addItem(settingsItem)
 
-        let quitItem = NSMenuItem(title: String(localized: "Quit vkey"), action: #selector(quit), keyEquivalent: "q")
+        let quitItem = NSMenuItem(title: String(localized: "Quit Voxt"), action: #selector(quit), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
     }

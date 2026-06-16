@@ -11,6 +11,7 @@ import Combine
 enum SettingsTab: String, Hashable, CaseIterable {
     case general
     case language
+    case about
 }
 
 @MainActor

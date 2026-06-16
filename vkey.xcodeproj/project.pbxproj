@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		C8D775412FD6F6DB005B8466 /* vkey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = vkey.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C8D775412FD6F6DB005B8466 /* vkey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = vkey.app; path = Voxt.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -263,15 +263,15 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "vkey はあなたの声を文字起こしするためにマイクを使用します。音声は端末内でのみ処理され、保存・送信されません。";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "vkey は録音した音声を端末内で文字起こしするために音声認識を使用します。音声は外部に送信されません。";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Voxt はあなたの声を文字起こしするためにマイクを使用します。音声は端末内でのみ処理され、保存・送信されません。";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Voxt は録音した音声を端末内で文字起こしするために音声認識を使用します。音声は外部に送信されません。";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = me.morishin.vkey;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = me.morishin.voxt;
+				PRODUCT_NAME = Voxt;
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -299,15 +299,15 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "vkey はあなたの声を文字起こしするためにマイクを使用します。音声は端末内でのみ処理され、保存・送信されません。";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "vkey は録音した音声を端末内で文字起こしするために音声認識を使用します。音声は外部に送信されません。";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Voxt はあなたの声を文字起こしするためにマイクを使用します。音声は端末内でのみ処理され、保存・送信されません。";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Voxt は録音した音声を端末内で文字起こしするために音声認識を使用します。音声は外部に送信されません。";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = me.morishin.vkey;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = me.morishin.voxt;
+				PRODUCT_NAME = Voxt;
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;

@@ -42,7 +42,7 @@ final class SettingsWindowController {
                 .environmentObject(navigation)
             let hosting = NSHostingController(rootView: root)
             let window = NSWindow(contentViewController: hosting)
-            window.title = String(localized: "vkey Settings")
+            window.title = String(localized: "Voxt Settings")
             window.styleMask = [.titled, .closable]
             window.isReleasedWhenClosed = false
             // 別 Space で開いても現在の Space に出すようにする。

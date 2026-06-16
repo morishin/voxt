@@ -19,6 +19,9 @@ struct SettingsView: View {
             LanguageSettingsView()
                 .tabItem { Text("Language") }
                 .tag(SettingsTab.language)
+            AboutView()
+                .tabItem { Text("About") }
+                .tag(SettingsTab.about)
         }
         .frame(width: 460, height: 460)
     }
@@ -47,7 +50,7 @@ struct GeneralSettingsView: View {
                     }
                     Button("Re-check") { permissions.refresh() }
                 } header: {
-                    Label("vkey needs permission to work", systemImage: "exclamationmark.triangle.fill")
+                    Label("Voxt needs permission to work", systemImage: "exclamationmark.triangle.fill")
                         .foregroundStyle(.orange)
                         .font(.headline)
                 }
