@@ -1,0 +1,95 @@
+name: Release
+
+# v* タグを push するとリリースビルドを作り、ノータライズ後に GitHub Releases へ添付する。
+# GitHub ホストランナー(macos-26)を使用。セルフホストランナーは不要。
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write # 既定の GITHUB_TOKEN でリリースを作成するために必要
+
+jobs:
+  release:
+    runs-on: macos-26
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 26
+        run: |
+          if [ -d "/Applications/Xcode_26.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_26.app/Contents/Developer
+          fi
+          xcodebuild -version
+
+      # Developer ID Application 証明書(.p12)を一時キーチェーンへ取り込む。
+      - name: Import signing certificate
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          CERT_PATH="$RUNNER_TEMP/cert.p12"
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o "$CERT_PATH"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERT_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH" login.keychain
+
+      # リリースされるアプリのバージョンをタグ(v1.2 → 1.2)に合わせる。
+      # これによりアプリ内アップデートチェック(CFBundleShortVersionString)が正しく機能する。
+      - name: Archive
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          xcodebuild archive \
+            -project Voxt.xcodeproj \
+            -scheme Voxt \
+            -configuration Release \
+            -archivePath "$RUNNER_TEMP/Voxt.xcarchive" \
+            -destination "generic/platform=macOS" \
+            MARKETING_VERSION="$VERSION" \
+            CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Developer ID Application" \
+            DEVELOPMENT_TEAM=4GERXBURZN \
+            OTHER_CODE_SIGN_FLAGS="--timestamp"
+
+      - name: Export
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/Voxt.xcarchive" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -exportOptionsPlist ExportOptions.plist
+
+      - name: Notarize & staple
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          APP="$RUNNER_TEMP/export/Voxt.app"
+          ZIP="$RUNNER_TEMP/notarize.zip"
+          # ノータライズ申請用に一度 zip 化して提出する。
+          ditto -c -k --keepParent "$APP" "$ZIP"
+          xcrun notarytool submit "$ZIP" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_APP_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait
+          # チケットを .app に添付し、配布用 zip を作り直す。
+          xcrun stapler staple "$APP"
+          ditto -c -k --keepParent "$APP" "$RUNNER_TEMP/Voxt.zip"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            "$RUNNER_TEMP/Voxt.zip" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes
