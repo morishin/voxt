@@ -30,3 +30,4 @@
 
 ## docs/plans/（設計プラン）
 - `001-local-voice-input-pipeline.md` — ローカル音声入力アプリの実装プラン（多言語対応・トークン上限対策のチャンク分割・発話キューイング/チャンク並列整形・挿入順序保証パイプライン）
+- `002-rebrand-voxt-about-tab.md` — vkey → Voxt リブランド・物理リネーム・About タブ追加・アップデートチェック・GitHub Releases 配布/CI のプラン
