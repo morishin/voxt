@@ -35,7 +35,7 @@ struct AboutView: View {
 
             VStack(spacing: 12) {
                 LabeledContent(String(localized: "Author")) {
-                    Link("Shintaro Morikawa", destination: URL(string: "https://github.com/morishin")!)
+                    Link("morishin", destination: URL(string: "https://github.com/sponsors/morishin?frequency=one-time")!)
                 }
                 .frame(maxWidth: 240)
 

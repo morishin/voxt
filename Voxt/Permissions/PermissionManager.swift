@@ -11,6 +11,7 @@ import Combine
 import AVFoundation
 import Speech
 import ApplicationServices
+import CoreGraphics
 import IOKit.hid
 import AppKit
 import OSLog
@@ -62,11 +63,14 @@ final class PermissionManager: ObservableObject {
         speechRecognition = Self.mapSpeechAuthorization(status)
     }
 
-    /// アクセシビリティはプロンプト付きで信頼を要求する（システムダイアログを表示）。
+    /// アクセシビリティ権限を要求する（システムダイアログを表示）。
+    /// 実際のテキスト挿入で使う CGEvent 投函（Cmd-V 合成）に必要な「イベント投函」権限を要求する。
+    /// AXIsProcessTrustedWithOptions の汎用「コンピュータを制御」プロンプトはアクセサリアプリ
+    /// （Dock なし常駐）だと表示されないことがあるため、CGRequestPostEventAccess を使ってダイアログを確実に出す。
+    /// アクセシビリティの TCC バケットは共通なので、ここで許可すれば AX 直接挿入も使えるようになる。
     func requestAccessibility() {
-        let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
-        let trusted = AXIsProcessTrustedWithOptions(options)
-        accessibility = trusted ? .granted : .denied
+        let granted = CGRequestPostEventAccess()
+        accessibility = granted ? .granted : .denied
     }
 
     func requestInputMonitoring() {

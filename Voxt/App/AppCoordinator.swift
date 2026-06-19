@@ -48,6 +48,12 @@ final class AppCoordinator: ObservableObject {
     /// 起動時に呼ぶ。権限確認・ホットキー監視・処理パイプラインを開始する。
     func start() {
         permissions.refresh()
+        // アクセシビリティは AXIsProcessTrustedWithOptions(prompt:) を一度呼ばないと
+        // システム設定の一覧にアプリが現れない（録音→挿入を試行するまで登録されない）。
+        // 起動時に未許可なら一度だけプロンプトを出して登録・誘導する。
+        if !permissions.accessibility.isGranted {
+            permissions.requestAccessibility()
+        }
         hotkey.start()
         status.modelAvailable = SystemLanguageModel.default.isAvailable
         applyLaunchAtLogin(settings.launchAtLogin)

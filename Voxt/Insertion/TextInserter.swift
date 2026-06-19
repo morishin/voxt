@@ -15,6 +15,7 @@ import OSLog
 /// 挿入の結果。通知・ログに使う。
 enum InsertionOutcome: Sendable {
     case directInserted
+    case typed
     case pasted
     case failed
 }
@@ -38,10 +39,16 @@ final class TextInserter {
             pasteViaClipboard(text)
             return .pasted
         case .auto:
+            // 1) AX 直接挿入（標準テキストフィールド向け。クリップボード非経由）。
             if insertViaAccessibility(text) { return .directInserted }
-            Log.insertion.info("AX insertion failed; falling back to clipboard paste")
-            pasteViaClipboard(text)
-            return .pasted
+            // 2) Unicode キーイベントで直接タイプする（Web ビュー/Electron 等の多くのアプリで有効。
+            //    クリップボードを一切触らないため、入力テキストがクリップボードに残らない）。
+            Log.insertion.info("AX insertion failed; falling back to keyboard typing")
+            if typeViaKeyboard(text) { return .typed }
+            // 3) どちらも使えない時だけクリップボードへ退避し、手動貼り付けを案内する（ペーストはしない）。
+            Log.insertion.error("keyboard typing unavailable; copied to clipboard")
+            copyToClipboard(text)
+            return .failed
         }
     }
 
@@ -63,6 +70,37 @@ final class TextInserter {
 
         let setErr = AXUIElementSetAttributeValue(element, kAXSelectedTextAttribute as CFString, text as CFString)
         return setErr == .success
+    }
+
+    // MARK: - キーボード直接入力（クリップボード非経由）
+
+    /// Unicode 文字列を CGEvent として直接「タイプ」する。クリップボードを使わない。
+    /// keyboardSetUnicodeString は 1 イベントに載せる文字数が多いと取りこぼす実装があるため、
+    /// 文字単位の小さなチャンクに分けて keyDown/keyUp を投函する。
+    /// 現在押されている修飾キーの状態を引き継がないよう privateState のイベントソースを使う。
+    private func typeViaKeyboard(_ text: String) -> Bool {
+        guard let source = CGEventSource(stateID: .privateState) else { return false }
+
+        // grapheme（Character）単位で分割し、サロゲートペアや結合文字を壊さないようにする。
+        let chunkSize = 16
+        var index = text.startIndex
+        while index < text.endIndex {
+            let end = text.index(index, offsetBy: chunkSize, limitedBy: text.endIndex) ?? text.endIndex
+            var utf16 = Array(text[index..<end].utf16)
+            index = end
+
+            guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: true),
+                  let keyUp = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: false) else {
+                return false
+            }
+            keyDown.flags = []
+            keyUp.flags = []
+            keyDown.keyboardSetUnicodeString(stringLength: utf16.count, unicodeString: &utf16)
+            keyUp.keyboardSetUnicodeString(stringLength: utf16.count, unicodeString: &utf16)
+            keyDown.post(tap: .cgAnnotatedSessionEventTap)
+            keyUp.post(tap: .cgAnnotatedSessionEventTap)
+        }
+        return true
     }
 
     // MARK: - クリップボード fallback
