@@ -89,7 +89,7 @@ struct GeneralSettingsView: View {
                     TextField(
                         "Custom formatting instructions",
                         text: $settings.customFormattingInstruction,
-                        prompt: Text("e.g. Use a formal tone / Prefix bullet points with a dash"),
+                        prompt: Text("e.g. Capitalize product names like GitHub and macOS"),
                         axis: .vertical
                     )
                     .textFieldStyle(.roundedBorder)

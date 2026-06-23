@@ -171,12 +171,12 @@
         }
       }
     },
-    "e.g. Use a formal tone / Prefix bullet points with a dash" : {
+    "e.g. Capitalize product names like GitHub and macOS" : {
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "例: だ・である調に統一する / 箇条書きは行頭に「・」を付ける"
+            "value" : "例: 英単語はカタカナではなくアルファベットで表記する"
           }
         }
       }
