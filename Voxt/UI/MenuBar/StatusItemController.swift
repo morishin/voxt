@@ -25,8 +25,10 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private var cancellables: Set<AnyCancellable> = []
     private var animationTimer: Timer?
     private var phase: Double = 0
-    private let frameInterval: TimeInterval = 1.0 / 20.0
-    private let pulsePeriod: TimeInterval = 1.6   // 明滅 1 周期
+    private let frameInterval: TimeInterval = 1.0 / 30.0
+    private var pulsePeriod: TimeInterval = 1.4          // 現在の明滅周期（状態で切り替える）
+    private let recordingPulsePeriod: TimeInterval = 1.4  // 録音中: ゆっくり明滅
+    private let processingPulsePeriod: TimeInterval = 0.45 // 処理中: かなり速く明滅
 
     init(status: PipelineStatusStore,
          settings: SettingsStore,
@@ -63,20 +65,38 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private func applyState(_ state: PipelineStatusStore.UIState) {
         switch state {
         case .ready:
-            setImage("mic")
+            // 待機: ロゴを静止表示。
+            setLogoImage()
             stopAnimation()
         case .recording:
-            setImage("mic.fill")
-            startAnimation()
+            // 録音中: ロゴをゆっくり明滅。
+            setLogoImage()
+            startAnimation(period: recordingPulsePeriod)
         case .processing:
-            setImage("ellipsis.bubble")
-            startAnimation()
+            // 処理中: ロゴをかなり速く明滅させて録音中と区別する。
+            setLogoImage()
+            startAnimation(period: processingPulsePeriod)
         }
     }
 
-    private func setImage(_ symbolName: String) {
-        statusItem.button?.image = Self.symbolImage(symbolName)
+    /// 各状態で表示する Voxt のブランドロゴ（メニューバー用テンプレート画像）。
+    private func setLogoImage() {
+        statusItem.button?.image = Self.logoImage()
         statusItem.button?.alphaValue = 1.0
+    }
+
+    /// アセットの SVG ロゴをメニューバーの高さに合わせて構成したテンプレート画像にする。
+    private static func logoImage() -> NSImage? {
+        guard let base = NSImage(named: "MenuBarIcon"),
+              let image = base.copy() as? NSImage else {
+            // 取得できなければ従来の SF Symbol にフォールバックする。
+            return symbolImage("mic")
+        }
+        let height: CGFloat = 16
+        let aspect = base.size.height > 0 ? base.size.width / base.size.height : 1
+        image.size = NSSize(width: height * aspect, height: height)
+        image.isTemplate = true
+        return image
     }
 
     /// SF Symbol をメニューバー向けに構成したテンプレート画像にする。
@@ -90,9 +110,10 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
     // MARK: - Animation（Timer で alpha を明滅）
 
-    private func startAnimation() {
+    private func startAnimation(period: TimeInterval) {
+        pulsePeriod = period
+        phase = 0   // 周期変更時もリセットして滑らかに切り替える。
         guard animationTimer == nil else { return }
-        phase = 0
         let timer = Timer(timeInterval: frameInterval, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }
         }
