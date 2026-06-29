@@ -1,3 +1,5 @@
+<img width="2652" height="1152" alt="voxt-hero" src="https://github.com/user-attachments/assets/27881878-2b38-49d6-a93f-9fd8f4789f5a" />
+
 # Voxt
 
 Push-to-talk voice input for macOS. Hold a key, speak, release — Voxt transcribes and formats your words with on-device AI, then types them wherever your cursor is. Fully local. No cloud.
