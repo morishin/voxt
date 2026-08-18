@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>無料・オフラインで使える音声入力 — サブスク不要の代替アプリ | Voxt</title>
+  <meta name="description" content="多くの AI 音声入力アプリは月額課金制で、話した内容をクラウドへ送信します。Voxt は無料・完全オフライン・オープンソース。違いを比較して紹介します。">
+  <meta name="keywords" content="無料 音声入力, オフライン 音声入力, サブスクなし 文字起こし, プライバシー AI 音声入力, オープンソース 文字起こし, 音声入力 アプリ 比較, クラウド不要 音声入力">
+  <meta name="author" content="morishin">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#3851d1">
+  <link rel="canonical" href="https://voxt.morishin.me/ja/compare/">
+  <link rel="alternate" hreflang="en" href="https://voxt.morishin.me/compare/">
+  <link rel="alternate" hreflang="ja" href="https://voxt.morishin.me/ja/compare/">
+  <link rel="alternate" hreflang="x-default" href="https://voxt.morishin.me/compare/">
+  <link rel="icon" type="image/webp" href="../../assets/icon.webp">
+  <link rel="apple-touch-icon" href="../../assets/icon.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;700;800&family=DM+Sans:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Voxt">
+  <meta property="og:title" content="無料・オフラインで使える音声入力 — サブスク不要の代替アプリ | Voxt">
+  <meta property="og:description" content="多くの AI 音声入力アプリは月額課金制で、話した内容をクラウドへ送信します。Voxt は無料・完全オフライン・オープンソースです。">
+  <meta property="og:url" content="https://voxt.morishin.me/ja/compare/">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:image" content="https://voxt.morishin.me/assets/icon.webp">
+  <meta property="og:image:width" content="1024">
+  <meta property="og:image:height" content="1024">
+  <meta property="og:image:alt" content="Voxt アプリアイコン">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="無料・オフラインで使える音声入力 — サブスク不要の代替アプリ | Voxt">
+  <meta name="twitter:description" content="Voxt は無料・完全オフライン・オープンソース。サブスクもクラウド送信もありません。">
+  <meta name="twitter:image" content="https://voxt.morishin.me/assets/icon.webp">
+  <meta name="twitter:creator" content="@morishin127">
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "サブスク不要で無料の音声入力アプリはありますか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "はい。Voxt は文字数制限もサブスクもアカウント登録も不要で、完全に無料です。オープンソースなので、動作をコードで確認することもできます。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "インターネット接続なしで Mac の音声入力は使えますか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "はい。Voxt は Apple の Speech フレームワークと Foundation Models を使ってすべてデバイス上で処理するため、インターネットに一切接続していなくても動作します。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "音声入力アプリは録音データを保存・送信しますか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "多くのクラウド型の音声入力アプリは音声をサーバーへ送信し、文字起こし結果をデフォルトで保存します。Voxt は一切アップロードせず、各発話の処理後に音声データを即座に削除します。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "オンデバイス処理とクラウド処理の音声入力アプリの違いは何ですか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "オンデバイス処理は音声を Mac 上でローカルに処理するため、話した内容が外部サーバーに送られることはありません。クラウド型のアプリは音声をリモートサーバーへ送って文字起こしを行うため、通常はインターネット接続と有料プランが必要です。"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "無料でオフラインの音声入力アプリは有料のクラウド型アプリと同じくらい高精度ですか？",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Voxt は Apple のオンデバイス音声認識と Foundation Models による整形を組み合わせ、音声をクラウドに送ることなく句読点の整った読みやすいテキストを生成します。"
+        }
+      }
+    ]
+  }
+  </script>
+
+  <link rel="stylesheet" href="../../assets/style.css">
+</head>
+<body>
+
+<nav class="lang-switch">
+  <a href="/compare/">EN</a>
+  <a href="/ja/compare/" class="active">JA</a>
+</nav>
+
+<article class="legal">
+  <a href="/" class="back">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+    Voxt トップへ戻る
+  </a>
+
+  <h1>無料でオフラインに使える、サブスク不要の音声入力</h1>
+  <span class="updated">比較</span>
+
+  <p>いま主流の AI 音声入力アプリの多くは、月額課金のクラウドサービスです。無料枠はすぐに使い切ってしまい、話した内容はひと言ごとにリモートサーバーへ送信されます。Voxt はそれとは違うアプローチを取っています — すべての処理は Mac 上で完結し、ずっと無料です。</p>
+
+  <h2>Voxt との比較</h2>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>&nbsp;</th>
+        <th>Voxt</th>
+        <th>一般的なクラウド型音声入力アプリ</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>料金</td>
+        <td class="yes">無料・制限なし</td>
+        <td>月額または年額のサブスク</td>
+      </tr>
+      <tr>
+        <td>無料枠</td>
+        <td class="yes">無制限に利用可能</td>
+        <td>少量の文字数を使い切ると有料化</td>
+      </tr>
+      <tr>
+        <td>処理方式</td>
+        <td class="yes">完全にオンデバイス</td>
+        <td>クラウドサーバー</td>
+      </tr>
+      <tr>
+        <td>オフラインで動作</td>
+        <td class="yes">可能</td>
+        <td>不可</td>
+      </tr>
+      <tr>
+        <td>音声データの外部送信</td>
+        <td class="yes">一切なし</td>
+        <td>送信され、デフォルトで保存されることが多い</td>
+      </tr>
+      <tr>
+        <td>ソースコード</td>
+        <td class="yes">オープンソース（自分で検証可能）</td>
+        <td>非公開</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>よくある質問</h2>
+
+  <h3>サブスク不要で無料の音声入力アプリはありますか？</h3>
+  <p>はい。Voxt は文字数制限もサブスクもアカウント登録も不要で、完全に無料です。オープンソースなので、動作をコードで確認することもできます。</p>
+
+  <h3>インターネット接続なしで Mac の音声入力は使えますか？</h3>
+  <p>はい。Voxt は Apple の Speech フレームワークと Foundation Models を使ってすべてデバイス上で処理するため、インターネットに一切接続していなくても動作します。</p>
+
+  <h3>音声入力アプリは録音データを保存・送信しますか？</h3>
+  <p>多くのクラウド型の音声入力アプリは音声をサーバーへ送信し、文字起こし結果をデフォルトで保存します。Voxt は一切アップロードせず、各発話の処理後に音声データを即座に削除します。</p>
+
+  <h3>オンデバイス処理とクラウド処理の音声入力アプリの違いは何ですか？</h3>
+  <p>オンデバイス処理は音声を Mac 上でローカルに処理するため、話した内容が外部サーバーに送られることはありません。クラウド型のアプリは音声をリモートサーバーへ送って文字起こしを行うため、通常はインターネット接続と有料プランが必要です。</p>
+
+  <h3>無料でオフラインの音声入力アプリは有料のクラウド型アプリと同じくらい高精度ですか？</h3>
+  <p>Voxt は Apple のオンデバイス音声認識と Foundation Models による整形を組み合わせ、音声をクラウドに送ることなく句読点の整った読みやすいテキストを生成します。</p>
+
+  <div class="cta-group">
+    <a href="https://github.com/morishin/voxt/releases/latest" class="btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      macOS 版をダウンロード
+    </a>
+    <p class="cta-note">macOS 26 以降が必要 &middot; 無料</p>
+  </div>
+</article>
+
+<footer>
+  <div class="container">
+    <div class="footer-brand">
+      <img src="../../assets/icon.webp" alt="" width="26" height="26">
+      Voxt
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/morishin/voxt/releases">GitHub Releases</a>
+      <a href="../../privacy.html">プライバシーポリシー</a>
+    </div>
+    <p>&copy; 2026 Voxt</p>
+  </div>
+</footer>
+
+</body>
+</html>
